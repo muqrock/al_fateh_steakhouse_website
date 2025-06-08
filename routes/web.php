@@ -15,26 +15,28 @@ use Inertia\Inertia;
 */
 
 
-// --- This is now your main homepage route ---
+// Homepage Route
 Route::get('/', function () {
     return Inertia::render('HomePage');
 })->name('home');
 
-
-// This route is for logged-in users
+// Dashboard Route (for logged-in users)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 });
 
-
-// --- Your new route for the order page (This is perfect!) ---
+// Order Page Route
 Route::get('/order', function () {
-    // This tells Inertia to render the 'OrderPage.tsx' component
-    // from your resources/js/Pages directory.
     return Inertia::render('OrderPage');
 })->name('order');
+
+
+// --- Add this new route for your menu page ---
+Route::get('/menu', function () {
+    return Inertia::render('MenuPage');
+})->name('menu');
 
 
 // Include other route files
