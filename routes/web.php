@@ -38,6 +38,10 @@ Route::get('/menu', function () {
     return Inertia::render('MenuPage');
 })->name('menu');
 
+// --- Add this new route for your review page ---
+Route::get('/review', function () {
+    return Inertia::render('ReviewPage');
+})->name('review');
 
 // Include other route files
 require __DIR__.'/settings.php';
