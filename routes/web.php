@@ -43,6 +43,12 @@ Route::get('/review', function () {
     return Inertia::render('ReviewPage');
 })->name('review');
 
+// --- Add this new route for your about page ---
+Route::get('/about', function () {
+    return Inertia::render('AboutPage');
+})->name('about');
+
+
 // Include other route files
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

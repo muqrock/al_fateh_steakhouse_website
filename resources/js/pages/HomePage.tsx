@@ -19,12 +19,12 @@ export default function HomePage() {
     >
       {/* Navigation Bar */}
       <nav className="flex justify-center items-center gap-10 p-8 bg-black/50 text-xl">
-        <a href="/" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Home</a>
-        <a href="/menu" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Menu</a>
-        <a href="/reservation" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Reservation</a>
-        <a href="/review" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Review</a>
-        <a href="/about" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">About</a>
-      </nav>
+  <a href="/" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Home</a>
+  <a href="/menu" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Menu</a>
+  <a href="/reservation" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Reservation</a>
+  <a href="/review" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Review</a>
+  <a href="/about" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">About</a> {/* Correct Link */}
+</nav>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col justify-center items-center text-center p-5">
