@@ -14,6 +14,11 @@ use Inertia\Inertia;
 |
 */
 
+// Order Login Route
+Route::get('/login', function () {
+    return Inertia::render('LoginPage');
+})->name('login');
+
 
 // Homepage Route
 Route::get('/', function () {
