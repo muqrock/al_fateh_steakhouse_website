@@ -36,115 +36,98 @@ export default function ReviewPage() {
   const handleSubmit = () => {
     if (name.trim() && newReview.trim() && rating > 0) {
       const randomImage = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`;
-      setReviews([
-        ...reviews,
-        { name, comment: newReview, rating, imageUrl: randomImage }
-      ]);
+      setReviews([...reviews, { name, comment: newReview, rating, imageUrl: randomImage }]);
       setName('');
       setNewReview('');
       setRating(0);
     }
   };
 
-  const renderStars = (count: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={i < count ? 'text-yellow-400' : 'text-gray-300'}>
+  const renderStars = (count: number) =>
+    Array.from({ length: 5 }, (_, i) => (
+      <span key={i} className={i < count ? 'text-yellow-400' : 'text-gray-600'}>
         ★
       </span>
     ));
-  };
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center font-sans" 
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556909218-31e1c5ff1c1b?q=80&w=2940&auto=format&fit=crop')" }}
+    <div
+      className="min-h-screen bg-fixed bg-cover bg-center"
+      style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1562967916-eb82221dfb36?q=80&w=2940&auto=format&fit=crop')`
+      }}
     >
-      <div className="bg-black/60 min-h-screen text-white">
+      {/* Dark Overlay */}
+      <div className="min-h-screen bg-black/80">
         {/* Navigation Bar */}
-        <nav className="flex justify-between items-center p-6 bg-black/50 text-white">
-          <a href="/" className="text-2xl font-bold uppercase no-underline text-white">Al-Fateh</a>
-          <div className="flex items-center gap-6 text-lg">
-            <a href="/" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Home</a>
-            <a href="/menu" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Menu</a>
-            <a href="/reservation" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Reservation</a>
-            <a href="/review" className="no-underline text-orange-400 font-bold">Review</a>
-            <a href="/about" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">About</a>
+        <nav className="flex justify-between items-center p-6 bg-black border-b border-yellow-400">
+          <a href="/" className="text-2xl font-bold uppercase text-yellow-400">Al-Fateh</a>
+          <div className="flex items-center gap-6 text-md font-medium">
+            <a href="/" className="text-white hover:text-yellow-400 transition">Home</a>
+            <a href="/menu" className="text-white hover:text-yellow-400 transition">Menu</a>
+            <a href="/reservation" className="text-white hover:text-yellow-400 transition">Reservation</a>
+            <a href="/review" className="text-yellow-400 font-bold">Review</a>
+            <a href="/about" className="text-white hover:text-yellow-400 transition">About</a>
           </div>
         </nav>
 
-        {/* Main Section */}
-        <main className="max-w-4xl mx-auto p-8 my-10 bg-white/90 rounded-xl text-gray-800 shadow-xl">
+        <main className="max-w-4xl mx-auto p-8 my-10 bg-zinc-900 rounded-xl shadow-2xl border border-yellow-500/30 text-white">
+          {/* Title */}
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold mb-2">Customer Reviews</h1>
-            <p className="text-lg text-gray-700">Read reviews from our guests and leave your own!</p>
+            <h1 className="text-4xl font-extrabold text-yellow-400">Customer Reviews</h1>
+            <p className="text-gray-300 mt-2">See what our guests are saying about Al-Fateh Steakhouse.</p>
           </div>
 
-          {/* Existing Reviews */}
+          {/* Reviews */}
           <section className="space-y-6 mb-10">
             {reviews.map((review, idx) => (
-              <div key={idx} className="p-4 flex gap-4 border border-orange-300 rounded-lg bg-white shadow-md items-start">
-                <img src={review.imageUrl} alt={review.name} className="w-14 h-14 rounded-full object-cover border" />
+              <div key={idx} className="p-4 flex gap-4 bg-zinc-800 rounded-lg shadow border border-yellow-400/30">
+                <img src={review.imageUrl} alt={review.name} className="w-14 h-14 rounded-full object-cover border border-yellow-500/40" />
                 <div>
-                  <h3 className="font-semibold text-lg text-orange-600">{review.name}</h3>
-                  <div className="text-yellow-500 mb-2">{renderStars(review.rating)}</div>
-                  <p className="text-gray-700">{review.comment}</p>
+                  <h3 className="font-semibold text-lg text-yellow-300">{review.name}</h3>
+                  <div className="text-yellow-400 mb-2">{renderStars(review.rating)}</div>
+                  <p className="text-gray-300">{review.comment}</p>
                 </div>
               </div>
             ))}
           </section>
 
-          {/* Input Section */}
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-800">Leave a Review</h2>
+          {/* Input Form */}
+          <section className="space-y-5">
+            <h2 className="text-2xl font-bold text-yellow-300">Leave a Review</h2>
             <input
               type="text"
               placeholder="Your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full p-3 bg-zinc-800 text-white border border-yellow-500/30 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
-
-            {/* Star Rating Input */}
-            <div className="flex flex-col gap-2">
-              <label className="text-lg font-medium text-gray-700">Your Rating:</label>
-              <div className="flex gap-1 cursor-pointer">
+            <div>
+              <label className="text-lg font-medium text-white">Your Rating:</label>
+              <div className="flex gap-2 mt-1 cursor-pointer">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
                     onClick={() => setRating(star)}
-                    className={`text-2xl transition ${rating >= star ? 'text-yellow-400' : 'text-gray-400'} hover:scale-110`}
+                    className={`text-2xl transition ${
+                      rating >= star ? 'text-yellow-400' : 'text-gray-600'
+                    } hover:scale-110`}
                   >
                     ★
                   </span>
                 ))}
               </div>
             </div>
-
             <textarea
               rows={4}
               placeholder="Write your review here..."
               value={newReview}
               onChange={(e) => setNewReview(e.target.value)}
-              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
-            ></textarea>
-
+              className="w-full p-3 bg-zinc-800 text-white border border-yellow-500/30 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
             <button
               onClick={handleSubmit}
-              className="
-                bg-orange-500 
-                text-white 
-                font-bold 
-                py-3 
-                px-6 
-                rounded-lg 
-                uppercase 
-                tracking-wide 
-                hover:bg-orange-600 
-                hover:shadow-lg 
-                hover:scale-105 
-                transition 
-                duration-300
-              "
+              className="w-full bg-yellow-400 text-black font-bold py-3 rounded uppercase tracking-wide hover:bg-yellow-300 transition duration-300 shadow-lg hover:shadow-yellow-400/50"
             >
               Enter Review
             </button>
