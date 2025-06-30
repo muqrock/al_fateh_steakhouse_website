@@ -37,7 +37,7 @@ export default function HomePage() {
         
         {/* Tagline */}
         <p className="text-2xl mb-10 italic">
-          The best in Tanjong Malim
+          Serving The Best Western Food For Our Lovely Customer
         </p>
         
         {/* Order Button */}
