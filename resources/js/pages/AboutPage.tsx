@@ -39,12 +39,22 @@ export default function AboutPage() {
         </div>
 
         {/* Map Section */}
-        <div className="mt-6">
-          <img 
-            src="/path-to-your-map-image.jpg" 
-            alt="Map location" 
-            className="w-full h-80 object-cover border-4 border-blue-400 rounded-lg shadow-md"
-          />
+        <div className="mt-6 relative">
+          <a
+            href="https://www.google.com/maps/place/Al+Fateh+Vision+Steak+House/@3.6736806,101.5315833,16.85z/data=!4m6!3m5!1s0x31cb880405581985:0x316cf03690f76bb!8m2!3d3.6736743!4d101.5313491!16s%2Fg%2F11c6zxlyjx?entry=ttu&g_ep=EgoyMDI1MDYyMy4yIKXMDSoASAFQAw%3D%3D"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full h-80 border-4 border-blue-400 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 relative"
+          >
+            <img
+              src="/images/map-dummy.jpg"
+              alt="Map location"
+              className="w-full h-80 object-cover"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity duration-200 z-20">
+              <span className="text-white text-lg font-semibold bg-blue-600 bg-opacity-80 px-4 py-2 rounded-full">Open in Google Maps</span>
+            </div>
+          </a>
         </div>
 
         {/* Contact Section */}
