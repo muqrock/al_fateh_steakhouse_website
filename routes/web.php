@@ -60,6 +60,16 @@ Route::get('/admin', function () {
 });
 
 
+
+//  NEW Reservation Routes
+
+use App\Http\Controllers\ReservationController;
+
+Route::get('/reservation', [ReservationController::class, 'index'])->name('reservation.index');
+Route::post('/reservation', [ReservationController::class, 'store'])->name('reservation.store');
+
+
+
 // Include other route files
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
