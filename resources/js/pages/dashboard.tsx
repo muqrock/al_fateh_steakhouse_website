@@ -30,6 +30,10 @@ export default function Dashboard() {
                     <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                 </div>
             </div>
+            {/* Footer */}
+            <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">
+                &copy; 2025 Alfateh Steak House &mdash; Designed by Akatsuci
+            </footer>
         </AppLayout>
     );
 }

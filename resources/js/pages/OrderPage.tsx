@@ -35,6 +35,11 @@ export default function OrderPage() {
           Back to Home
         </a>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">
+        &copy; 2025 Alfateh Steak House &mdash; Designed by Akatsuci
+      </footer>
     </div>
   );
 }
