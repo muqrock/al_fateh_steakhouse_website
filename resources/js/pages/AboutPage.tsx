@@ -9,7 +9,7 @@ const dummyAuth = {
   },
 };
 
-export default function AboutPage({ auth = dummyAuth }: { auth?: { user: any } }) {
+export default function AboutPage({ auth = dummyAuth }: { auth?: { user: { name: string | null } } }) {
   // Dummy logout handler
   const handleLogout = () => {
     alert('Logged out! (dummy)');

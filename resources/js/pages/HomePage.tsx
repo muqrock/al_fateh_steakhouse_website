@@ -16,7 +16,7 @@ const dummyAuth = {
   },
 };
 
-export default function HomePage({ auth = dummyAuth }: { auth?: { user: any } }) {
+export default function HomePage({ auth = dummyAuth }: { auth?: { user: { name: string | null } } }) {
   // Handler for Order Now button
   const handleOrderNow = () => {
     if (auth && auth.user) {
