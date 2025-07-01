@@ -54,6 +54,12 @@ Route::get('/about', function () {
 })->name('about');
 
 
+// Admin Dashboard Route
+Route::get('/admin', function () {
+    return Inertia::render('AdminDashboard');
+});
+
+
 // Include other route files
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
