@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\MenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +60,11 @@ Route::get('/admin', function () {
     return Inertia::render('AdminDashboard');
 });
 
+// Admin Menu List Route (for Inertia page)
+Route::get('/admin/menu', [MenuController::class, 'index'])->name('admin.menu.index');
+
+// For development: Remove auth/admin middleware to allow CRUD without login
+Route::resource('admin/menu', MenuController::class)->except(['index']);
 
 
 //  NEW Reservation Routes
