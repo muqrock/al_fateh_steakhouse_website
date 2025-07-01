@@ -68,7 +68,7 @@ export default function AboutPage({ auth = dummyAuth }: { auth?: { user: { name:
         {/* About Content */}
         <div className="bg-black/60 rounded-xl p-8 max-w-2xl w-full mb-8">
           <h2 className="text-3xl font-bold mb-4">About Us</h2>
-          <p className="mb-4 text-justify">
+          <p className="mb-4 text-justify font-serif text-lg leading-relaxed text-yellow-200 drop-shadow-md" style={{ letterSpacing: '0.03em', fontFamily: 'Merriweather, Georgia, serif' }}>
             Al-Fateh Steakhouse is your local destination for mouthwatering Western-style cuisine, proudly serving the communities of Tanjong Malim and Ulu Bernam. From juicy steaks and fried chicken to creamy pastas and gourmet burgers, every dish is prepared with passion and served in a warm, family-friendly setting. Whether you're dining with loved ones, catching up with friends, or celebrating a special occasion, Al-Fateh offers a cozy atmosphere and flavorful experience that keeps guests coming back for more.
           </p>
         </div>
