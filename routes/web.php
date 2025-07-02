@@ -15,9 +15,10 @@ use Inertia\Inertia;
 */
 
 // Order Login Route
-Route::get('/login', function () {
-    return Inertia::render('LoginPage');
-})->name('login');
+Route::get('/order', function () {
+    return Inertia::render('OrderPage');
+})->name('order');
+
 
 
 // Homepage Route
@@ -33,9 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Order Page Route
-Route::get('/order', function () {
-    return Inertia::render('OrderPage');
-})->name('order');
+
+Route::get('/order', [OrderController::class, 'index'])->name('order');
+
 
 
 // --- Add this new route for your menu page ---

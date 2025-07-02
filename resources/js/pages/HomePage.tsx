@@ -19,12 +19,9 @@ const dummyAuth = {
 export default function HomePage({ auth = dummyAuth }: { auth?: { user: { name: string | null } } }) {
   // Handler for Order Now button
   const handleOrderNow = () => {
-    if (auth && auth.user) {
-      router.visit('/reservation');
-    } else {
-      router.visit('/login');
-    }
-  };
+  router.visit('/order');
+};
+
   // Dummy logout handler
   const handleLogout = () => {
     alert('Logged out! (dummy)');
