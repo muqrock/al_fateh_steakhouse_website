@@ -1,169 +1,238 @@
 import React, { useState } from "react";
+import { usePage, router } from '@inertiajs/react';
+
+interface UserData {
+  name: string; // Changed from username to match Laravel's default
+  email: string;
+  password: string;
+  password_confirmation?: string;
+}
+
+interface PageProps {
+  csrf_token: string;
+}
 
 const LoginPage: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
+  const [formData, setFormData] = useState<UserData>({
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: ""
+  });
+  const [errors, setErrors] = useState<Partial<UserData>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { csrf_token } = usePage<PageProps>().props;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mode === 'login') {
-      alert(`Sign In\nUsername: ${username}\nPassword: ${password}`);
-    } else {
-      alert(`Register\nUsername: ${username}\nEmail: ${email}\nPassword: ${password}`);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (errors[name as keyof UserData]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
+  const validateForm = () => {
+    const newErrors: Partial<UserData> = {};
+    
+    if (mode === 'register' && !formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+    
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+    
+    if (mode === 'register' && formData.password !== formData.password_confirmation) {
+      newErrors.password_confirmation = "Passwords do not match";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  setIsSubmitting(true);
+
+  try {
+    if (mode === 'register') {
+      await router.post('/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.password_confirmation,
+      }, {
+        onSuccess: () => {
+          setMode('login');
+          setFormData({ name: "", email: "", password: "", password_confirmation: "" });
+          // Optional: Show success message
+        },
+        onError: (errors) => {
+          setErrors(errors as Partial<UserData>);
+        }
+      });
+    } else {
+      await router.post('/login', {
+        email: formData.email,
+        password: formData.password,
+        remember: 'on'
+      }, {
+        onSuccess: () => {
+          // Redirect handled by Laravel
+        },
+        onError: (errors) => {
+          setErrors(errors as Partial<UserData>);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Authentication error:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(120deg, #e0e7ef 0%, #f5f7fa 100%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 0,
-        margin: 0,
-        fontFamily: "'Segoe UI', 'Roboto', 'Arial', sans-serif"
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          padding: 40,
-          borderRadius: 20,
-          minWidth: 400,
-          maxWidth: 95,
-          boxShadow: "0 8px 32px 0 rgba(60, 72, 88, 0.12)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          border: "1px solid #e3e6f0"
-        }}
-      >
-        <img src="https://scontent.fkul10-1.fna.fbcdn.net/v/t39.30808-6/239936175_342324124259247_2241240302739337307_n.png?_nc_cat=110&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OiPobw0uxKEQ7kNvwFpCej5&_nc_oc=AdnySHY-p4vNJ_WilO7nLkiPgWvv8X1yqA2MWyvPRo3pO_bKHdAalHT6Yxl6kOHL9E8&_nc_zt=23&_nc_ht=scontent.fkul10-1.fna&_nc_gid=HtED01grQpvthOczf0nTUg&oh=00_AfM4d7K-cw-qeMA6bI1pM1OKfNk9DtFmeUk8FirU59BUGw&oe=68683232" alt="Logo" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 16, marginBottom: 18, boxShadow: '0 2px 8px rgba(60,72,88,0.10)' }} />
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <div className="flex justify-center gap-4 mb-6">
           <button
             onClick={() => setMode('login')}
-            style={{
-              background: mode === 'login' ? '#223a5f' : '#f7f9fa',
-              color: mode === 'login' ? '#fff' : '#223a5f',
-              border: '1.5px solid #d1d9e6',
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 16,
-              padding: '8px 28px',
-              cursor: 'pointer',
-              transition: 'background 0.2s, color 0.2s',
-              boxShadow: mode === 'login' ? '0 2px 8px rgba(34,58,95,0.10)' : 'none',
-            }}
+            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+              mode === 'login' 
+                ? 'bg-orange-500 text-white shadow-md' 
+                : 'bg-gray-100 text-gray-700'
+            }`}
           >
             Login
           </button>
           <button
             onClick={() => setMode('register')}
-            style={{
-              background: mode === 'register' ? '#223a5f' : '#f7f9fa',
-              color: mode === 'register' ? '#fff' : '#223a5f',
-              border: '1.5px solid #d1d9e6',
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 16,
-              padding: '8px 28px',
-              cursor: 'pointer',
-              transition: 'background 0.2s, color 0.2s',
-              boxShadow: mode === 'register' ? '0 2px 8px rgba(34,58,95,0.10)' : 'none',
-            }}
+            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+              mode === 'register' 
+                ? 'bg-orange-500 text-white shadow-md' 
+                : 'bg-gray-100 text-gray-700'
+            }`}
           >
             Register
           </button>
         </div>
-        <h2 style={{ color: "#223a5f", marginBottom: 8, fontWeight: 700, fontSize: 28, letterSpacing: 1 }}>{mode === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
-        <p style={{ color: "#6b7280", marginBottom: 28, fontSize: 16 }}>{mode === 'login' ? 'Login to your account' : 'Register a new account'}</p>
-        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-          <label style={{ fontWeight: 600, color: "#223a5f", marginBottom: 6, display: "block", letterSpacing: 0.5 }}>Username</label>
-          <input
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            style={{
-              width: "100%",
-              marginBottom: 18,
-              padding: 14,
-              borderRadius: 8,
-              border: "1.5px solid #d1d9e6",
-              fontSize: 16,
-              background: "#f7f9fa",
-              outline: 'none',
-              transition: 'border 0.2s',
-            }}
-            required
-          />
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input type="hidden" name="_token" value={csrf_token} />
+          
+          {/* Name Field (only for registration) */}
           {mode === 'register' && (
-            <>
-              <label style={{ fontWeight: 600, color: "#223a5f", marginBottom: 6, display: "block", letterSpacing: 0.5 }}>Email</label>
+            <div>
+              <label className="block text-gray-700 font-medium mb-1">Name</label>
               <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                style={{
-                  width: "100%",
-                  marginBottom: 18,
-                  padding: 14,
-                  borderRadius: 8,
-                  border: "1.5px solid #d1d9e6",
-                  fontSize: 16,
-                  background: "#f7f9fa",
-                  outline: 'none',
-                  transition: 'border 0.2s',
-                }}
-                required
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter your name"
+                disabled={isSubmitting}
               />
-            </>
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
           )}
-          <label style={{ fontWeight: 600, color: "#223a5f", marginBottom: 6, display: "block", letterSpacing: 0.5 }}>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={{
-              width: "100%",
-              marginBottom: 28,
-              padding: 14,
-              borderRadius: 8,
-              border: "1.5px solid #d1d9e6",
-              fontSize: 16,
-              background: "#f7f9fa",
-              outline: 'none',
-              transition: 'border 0.2s',
-            }}
-            required
-          />
+
+          {/* Email Field */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter your email"
+              disabled={isSubmitting}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+                errors.password ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter your password"
+              disabled={isSubmitting}
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
+          </div>
+
+          {/* Password Confirmation (only for registration) */}
+          {mode === 'register' && (
+            <div>
+              <label className="block text-gray-700 font-medium mb-1">Confirm Password</label>
+              <input
+                type="password"
+                name="password_confirmation"
+                value={formData.password_confirmation}
+                onChange={handleChange}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+                  errors.password_confirmation ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Confirm your password"
+                disabled={isSubmitting}
+              />
+              {errors.password_confirmation && (
+                <p className="text-red-500 text-sm mt-1">{errors.password_confirmation}</p>
+              )}
+            </div>
+          )}
+
+          {/* Submit Button */}
           <button
             type="submit"
-            style={{
-              width: "100%",
-              padding: 16,
-              background: "#223a5f",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontSize: 18,
-              fontWeight: 700,
-              cursor: "pointer",
-              marginBottom: 10,
-              boxShadow: "0 2px 8px rgba(34,58,95,0.10)",
-              letterSpacing: 1
-            }}
-            onMouseOver={e => (e.currentTarget.style.background = '#1e3c72')}
-            onMouseOut={e => (e.currentTarget.style.background = '#223a5f')}
+            disabled={isSubmitting}
+            className={`w-full bg-orange-500 text-white py-3 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-md ${
+              isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-orange-600'
+            }`}
           >
-            {mode === 'login' ? 'Login' : 'Register'}
+            {isSubmitting ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              mode === 'login' ? 'Login' : 'Register'
+            )}
           </button>
         </form>
       </div>
