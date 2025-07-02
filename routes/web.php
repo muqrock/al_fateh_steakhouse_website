@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -44,10 +45,13 @@ Route::get('/menu', function () {
     return Inertia::render('MenuPage');
 })->name('menu');
 
-// --- Add this new route for your review page ---
-Route::get('/review', function () {
-    return Inertia::render('ReviewPage');
-})->name('review');
+// (Removed duplicate /review route)
+
+// Review Routes
+use App\Http\Controllers\ReviewController;
+
+Route::get('/review', [ReviewController::class, 'index'])->name('review.index');
+Route::post('/review', [ReviewController::class, 'store']);
 
 // --- Add this new route for your about page ---
 Route::get('/about', function () {
