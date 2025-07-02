@@ -51,22 +51,24 @@ const AdminMenuList: React.FC = () => {
     reset();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('category', data.category);
     formData.append('price', data.price);
     if (data.image) formData.append('image', data.image);
+    const fetchOptions = {
+      method: editMenu ? 'POST' : 'POST',
+      credentials: 'include' as RequestCredentials,
+      body: formData,
+    };
     if (editMenu) {
-      router.post(`/admin/menu/${editMenu.id}?_method=PUT`, formData, {
-        onSuccess: closeModal,
-      });
+      await fetch(`/admin/menu/${editMenu.id}?_method=PUT`, fetchOptions);
+      closeModal();
     } else {
-      post('/admin/menu', {
-        onSuccess: closeModal,
-        forceFormData: true,
-      });
+      await fetch('/admin/menu', fetchOptions);
+      closeModal();
     }
   };
 
@@ -74,6 +76,15 @@ const AdminMenuList: React.FC = () => {
     if (confirm('Delete this menu item?')) {
       router.post(`/admin/menu/${id}`, { _method: 'DELETE' });
     }
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    window.location.href = '/login';
   };
 
   return (
@@ -246,3 +257,7 @@ const AdminMenuList: React.FC = () => {
 };
 
 export default AdminMenuList;
+
+/*
+  Example usage: <button onClick={handleLogout}>Logout</button>
+*/
