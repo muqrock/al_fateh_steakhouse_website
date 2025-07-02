@@ -79,12 +79,9 @@ const AdminMenuList: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/logout', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+    router.post('/logout', {}, {
+      onSuccess: () => router.visit('/')
     });
-    window.location.href = '/login';
   };
 
   return (

@@ -23,9 +23,10 @@ export default function HomePage() {
   };
 
   // Real logout handler
-  const handleLogout = async () => {
-    await router.post('/logout');
-    router.visit('/');
+  const handleLogout = () => {
+    router.post('/logout', {}, {
+      onSuccess: () => router.visit('/')
+    });
   };
 
   return (

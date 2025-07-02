@@ -26,8 +26,7 @@ class AuthenticatedSessionController extends Controller
         try {
             $request->authenticate();
             $request->session()->regenerate();
-            
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('home'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         }

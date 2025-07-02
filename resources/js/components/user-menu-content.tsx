@@ -10,18 +10,14 @@ interface UserMenuContentProps {
 }
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
-    const cleanup = useMobileNavigation();
 
-    const handleLogout = () => {
-        cleanup();
-        router.flushAll();
-    };
+    const cleanup = useMobileNavigation();
 
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <UserInfo user={user} showEmail={true} />
+                    <UserInfo />
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -35,7 +31,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                <Link
+                    className="block w-full"
+                    method="post"
+                    href={route('logout')}
+                    as="button"
+                    onSuccess={cleanup}
+                >
                     <LogOut className="mr-2" />
                     Log out
                 </Link>

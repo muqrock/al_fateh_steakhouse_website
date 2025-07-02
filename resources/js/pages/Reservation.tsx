@@ -1,5 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 export default function Reservation() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -47,7 +48,7 @@ export default function Reservation() {
             <a href="/review" className="text-white hover:text-orange-300">Review</a>
             <a href="/about" className="text-white hover:text-orange-300">About</a>
             <button 
-              onClick={() => window.location.href='/login'} 
+              onClick={() => router.visit('/login')} 
               className="text-white hover:text-orange-300 ml-4"
               title="Login"
             >

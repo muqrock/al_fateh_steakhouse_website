@@ -10,10 +10,11 @@ const dummyAuth = {
 };
 
 export default function AboutPage({ auth = dummyAuth }: { auth?: { user: { name: string | null } } }) {
-  // Dummy logout handler
+  // Real logout handler
   const handleLogout = () => {
-    alert('Logged out! (dummy)');
-    // In real app, call logout endpoint and redirect
+    router.post('/logout', {}, {
+      onSuccess: () => router.visit('/')
+    });
   };
 
   return (

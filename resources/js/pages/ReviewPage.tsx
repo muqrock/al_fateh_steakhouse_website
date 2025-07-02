@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 type Review = {
   id: number;
@@ -64,7 +65,7 @@ export default function ReviewPage() {
             <a href="/about" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">About</a>
             {/* Auth section */}
             {/* Dummy auth for now, replace with real auth logic if needed */}
-            <button onClick={() => window.location.href='/login'} title="Login" className="text-white hover:text-orange-300 transition-colors duration-300 ml-4">
+            <button onClick={() => router.visit('/login')} title="Login" className="text-white hover:text-orange-300 transition-colors duration-300 ml-4">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l3-3m0 0l-3-3m3 3H9" />
