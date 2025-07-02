@@ -1,47 +1,36 @@
+
 import React, { useState } from 'react';
+import { useForm, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 type Review = {
+  id: number;
   name: string;
   comment: string;
   rating: number;
-  imageUrl: string;
+  image_url: string;
 };
 
+interface PageProps {
+  reviews: Review[];
+}
+
 export default function ReviewPage() {
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      name: "Aisyah",
-      comment: "Great steak and friendly staff!",
-      rating: 5,
-      imageUrl: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-      name: "John",
-      comment: "Atmosphere was perfect, and food delicious.",
-      rating: 4,
-      imageUrl: "https://i.pravatar.cc/150?img=5",
-    },
-    {
-      name: "Nurul",
-      comment: "Loved the lamb chop! Will come again.",
-      rating: 5,
-      imageUrl: "https://i.pravatar.cc/150?img=8",
-    },
-  ]);
-
-  const [name, setName] = useState('');
-  const [newReview, setNewReview] = useState('');
-  const [rating, setRating] = useState(0);
+  const { reviews } = usePage<PageProps>().props;
   const [filterRating, setFilterRating] = useState(0);
+  const { data, setData, post, processing, reset, errors } = useForm({
+    name: '',
+    comment: '',
+    rating: 0,
+    image_url: '',
+  });
 
-  const handleSubmit = () => {
-    if (name.trim() && newReview.trim() && rating > 0) {
-      const randomImage = `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`;
-      setReviews([...reviews, { name, comment: newReview, rating, imageUrl: randomImage }]);
-      setName('');
-      setNewReview('');
-      setRating(0);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setData('image_url', `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`);
+    post('/review', {
+      onSuccess: () => reset(),
+    });
   };
 
   const renderStars = (count: number) =>
@@ -76,7 +65,7 @@ export default function ReviewPage() {
             <a href="/about" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">About</a>
             {/* Auth section */}
             {/* Dummy auth for now, replace with real auth logic if needed */}
-            <button onClick={() => window.location.href='/login'} title="Login" className="text-white hover:text-orange-300 transition-colors duration-300 ml-4">
+            <button onClick={() => router.visit('/login')} title="Login" className="text-white hover:text-orange-300 transition-colors duration-300 ml-4">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l3-3m0 0l-3-3m3 3H9" />
@@ -114,10 +103,10 @@ export default function ReviewPage() {
           <section className="space-y-6 mb-12 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-black/30">
             {reviews
               .filter((review) => filterRating === 0 || review.rating === filterRating)
-              .map((review, idx) => (
-                <div key={idx} className="p-4 flex gap-4 bg-zinc-900/80 rounded-lg shadow border border-yellow-500/30">
+              .map((review) => (
+                <div key={review.id} className="p-4 flex gap-4 bg-zinc-900/80 rounded-lg shadow border border-yellow-500/30">
                   <img
-                    src={review.imageUrl}
+                    src={review.image_url}
                     alt={review.name}
                     className="w-14 h-14 rounded-full object-cover border border-yellow-500/40"
                   />
@@ -133,42 +122,55 @@ export default function ReviewPage() {
           {/* New Review Form */}
           <section className="space-y-5">
             <h2 className="text-2xl font-bold text-yellow-300">Leave a Review</h2>
-            <input
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 bg-black text-white border border-yellow-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-            <div>
-              <label className="text-lg font-medium text-white">Your Rating:</label>
-              <div className="flex gap-2 mt-1 cursor-pointer">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    onClick={() => setRating(star)}
-                    className={`text-2xl ${
-                      rating >= star ? 'text-yellow-400' : 'text-gray-500'
-                    } hover:scale-110 transition`}
-                  >
-                    ★
-                  </span>
-                ))}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <input
+                type="text"
+                placeholder="Your name"
+                value={data.name}
+                onChange={e => setData('name', e.target.value)}
+                className="w-full p-3 bg-black text-white border border-yellow-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                required
+              />
+              <div>
+                <label className="text-lg font-medium text-white">Your Rating:</label>
+                <div className="flex gap-2 mt-1 cursor-pointer">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      onClick={() => setData('rating', star)}
+                      className={`text-2xl ${
+                        data.rating >= star ? 'text-yellow-400' : 'text-gray-500'
+                      } hover:scale-110 transition`}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-            <textarea
-              rows={4}
-              placeholder="Write your review here..."
-              value={newReview}
-              onChange={(e) => setNewReview(e.target.value)}
-              className="w-full p-3 bg-black text-white border border-yellow-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-yellow-400 text-black font-bold py-3 rounded uppercase tracking-wide hover:bg-yellow-300 transition duration-300 shadow-lg hover:shadow-yellow-400/50"
-            >
-              Enter Review
-            </button>
+              <textarea
+                rows={4}
+                placeholder="Write your review here..."
+                value={data.comment}
+                onChange={e => setData('comment', e.target.value)}
+                className="w-full p-3 bg-black text-white border border-yellow-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                required
+              />
+              {errors && (
+                <div className="text-red-400 text-sm">
+                  {Object.values(errors).map((err, i) => (
+                    <div key={i}>{err}</div>
+                  ))}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={processing}
+                className="w-full bg-yellow-400 text-black font-bold py-3 rounded uppercase tracking-wide hover:bg-yellow-300 transition duration-300 shadow-lg hover:shadow-yellow-400/50"
+              >
+                Enter Review
+              </button>
+            </form>
           </section>
         </main>
 
