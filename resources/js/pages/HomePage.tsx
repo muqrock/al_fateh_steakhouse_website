@@ -15,12 +15,6 @@ export default function HomePage() {
 
   // Handler for Order Now button
   const handleOrderNow = () => {
-<<<<<<< HEAD
-  router.visit('/order');
-};
-
-  // Dummy logout handler
-=======
     if (auth?.user) {
       router.visit('/reservation');
     } else {
@@ -29,7 +23,6 @@ export default function HomePage() {
   };
 
   // Real logout handler
->>>>>>> 60f270679b5629f906e7cc7439748a745264e64a
   const handleLogout = () => {
     router.post('/logout', {}, {
       onSuccess: () => router.visit('/')
