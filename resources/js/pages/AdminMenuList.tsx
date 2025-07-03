@@ -18,8 +18,9 @@ interface MenuItem {
 
 interface PageProps {
   menus: MenuItem[];
-  [key: string]: any; // This allows for additional unknown props
+  [key: string]: unknown; // required for Inertia
 }
+
 
 const AdminMenuList: React.FC = () => {
   const { menus } = usePage<PageProps>().props;
@@ -60,7 +61,7 @@ const AdminMenuList: React.FC = () => {
     formData.append('price', data.price);
     if (data.image) formData.append('image', data.image);
     const fetchOptions = {
-      method: editMenu ? 'POST' : 'POST',
+      method: 'POST',
       credentials: 'include' as RequestCredentials,
       body: formData,
     };
@@ -79,10 +80,8 @@ const AdminMenuList: React.FC = () => {
     }
   };
 
-  // Remove unused handleLogout, use sidebar logout form instead
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f6f2' }}>
+    <div className="flex min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
       {/* Sidebar */}
       <aside style={{
         width: 240,
@@ -94,7 +93,6 @@ const AdminMenuList: React.FC = () => {
         boxShadow: '2px 0 8px rgba(0,0,0,0.04)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          {/* <img src="https://scontent.fkul10-1.fna.fbcdn.net/v/t39.30808-6/239936175_342324124259247_2241240302739337307_n.png?..." alt="Logo" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 16, marginBottom: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.10)' }} /> */}
           <div style={{ fontWeight: 700, fontSize: 20, letterSpacing: 1 }}>Admin Panel</div>
         </div>
         <nav style={{ flex: 1 }}>
@@ -123,12 +121,15 @@ const AdminMenuList: React.FC = () => {
             </Link>
           ))}
         </nav>
-        {/* Logout button above copyright footer */}
+
         <form
           onSubmit={e => {
             e.preventDefault();
-            fetch('/admin/logout', { method: 'POST', credentials: 'include', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
-              .then(() => window.location.href = '/');
+            fetch('/admin/logout', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            }).then(() => window.location.href = '/');
           }}
           style={{ width: '100%', textAlign: 'center', marginBottom: 8 }}
         >
@@ -146,36 +147,37 @@ const AdminMenuList: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '48px 40px' }}>
-        <h2 style={{ fontSize: 32, fontWeight: 700, color: '#4e2e1e', marginBottom: 16 }}>Menu List</h2>
+      <main className="flex-1 p-12">
+        <h2 className="text-3xl font-bold mb-6 text-orange-900 dark:text-yellow-400">Menu List</h2>
         <button
           className="mb-4 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded font-bold"
           onClick={openAddModal}
         >
           + Add Menu
         </button>
-        <table className="w-full border border-separate border-spacing-0" style={{ tableLayout: 'fixed' }}>
+
+        <table className="w-full border border-separate border-spacing-0 table-fixed">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border-r border-gray-300 w-1/4 text-left">Name</th>
-              <th className="p-2 border-r border-gray-300 w-1/4 text-left">Category</th>
-              <th className="p-2 border-r border-gray-300 w-24 text-center">Price</th>
-              <th className="p-2 border-r border-gray-300 w-24 text-center">Image</th>
+            <tr className="bg-gray-100 dark:bg-gray-800 text-black dark:text-white">
+              <th className="p-2 border-r border-gray-300 dark:border-gray-700 w-1/4 text-left">Name</th>
+              <th className="p-2 border-r border-gray-300 dark:border-gray-700 w-1/4 text-left">Category</th>
+              <th className="p-2 border-r border-gray-300 dark:border-gray-700 w-24 text-center">Price</th>
+              <th className="p-2 border-r border-gray-300 dark:border-gray-700 w-24 text-center">Image</th>
               <th className="p-2 w-32 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {menus.map(menu => (
-              <tr key={menu.id} className="border-t border-gray-300">
-                <td className="p-2 border-r border-gray-200 align-middle truncate" title={menu.name}>{menu.name}</td>
-                <td className="p-2 border-r border-gray-200 align-middle truncate" title={menu.category || ''}>{menu.category || '-'}</td>
-                <td className="p-2 border-r border-gray-200 align-middle text-center">RM{Number(menu.price).toFixed(2)}</td>
-                <td className="p-2 border-r border-gray-200 text-center align-middle">
+              <tr key={menu.id} className="border-t border-gray-300 dark:border-gray-700">
+                <td className="p-2 border-r border-gray-200 dark:border-gray-700 truncate">{menu.name}</td>
+                <td className="p-2 border-r border-gray-200 dark:border-gray-700 truncate">{menu.category || '-'}</td>
+                <td className="p-2 border-r border-gray-200 dark:border-gray-700 text-center">RM{Number(menu.price).toFixed(2)}</td>
+                <td className="p-2 border-r border-gray-200 dark:border-gray-700 text-center">
                   {menu.image && (
-                    <img src={`/storage/${menu.image}`} alt={menu.name} className="h-16 w-16 object-cover rounded mx-auto" style={{ display: 'block', margin: '0 auto' }} />
+                    <img src={`/storage/${menu.image}`} alt={menu.name} className="h-16 w-16 object-cover rounded mx-auto" />
                   )}
                 </td>
-                <td className="p-2 align-middle text-center">
+                <td className="p-2 text-center">
                   <button
                     className="mr-2 text-blue-600 hover:underline"
                     onClick={() => openEditModal(menu)}
@@ -190,12 +192,12 @@ const AdminMenuList: React.FC = () => {
           </tbody>
         </table>
 
-        {/* Modal for Add/Edit */}
+        {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.3)' }}>
-            <div className="bg-white p-8 rounded shadow-lg w-full max-w-md relative">
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
+            <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-8 rounded shadow-lg w-full max-w-md relative">
               <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-300"
                 onClick={closeModal}
               >✕</button>
               <h3 className="text-xl font-bold mb-4">{editMenu ? 'Edit Menu' : 'Add Menu'}</h3>
@@ -206,7 +208,7 @@ const AdminMenuList: React.FC = () => {
                     type="text"
                     value={data.name}
                     onChange={e => setData('name', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-700 text-black dark:text-white"
                     required
                   />
                 </div>
@@ -216,7 +218,7 @@ const AdminMenuList: React.FC = () => {
                     type="text"
                     value={data.category}
                     onChange={e => setData('category', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-700 text-black dark:text-white"
                     required
                   />
                 </div>
@@ -226,7 +228,7 @@ const AdminMenuList: React.FC = () => {
                     type="number"
                     value={data.price}
                     onChange={e => setData('price', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded"
+                    className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-700 text-black dark:text-white"
                     required
                     min={0}
                     step="0.01"
@@ -238,9 +240,9 @@ const AdminMenuList: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
-                    className="w-full"
+                    className="w-full text-black dark:text-white"
                   />
-                  {editMenu && editMenu.image && (
+                  {editMenu?.image && (
                     <img src={`/storage/${editMenu.image}`} alt="Current" className="h-16 w-16 object-cover rounded mt-2" />
                   )}
                 </div>
@@ -268,7 +270,3 @@ const AdminMenuList: React.FC = () => {
 };
 
 export default AdminMenuList;
-
-/*
-  Example usage: <button onClick={handleLogout}>Logout</button>
-*/
