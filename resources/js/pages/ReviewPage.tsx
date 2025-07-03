@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 
@@ -26,6 +25,13 @@ export default function ReviewPage() {
     image_url: '',
   });
 
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://static.elfsight.com/platform/platform.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setData('image_url', `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`);
@@ -48,28 +54,22 @@ export default function ReviewPage() {
         backgroundImage: "url('https://i.pinimg.com/1200x/9d/49/0c/9d490ce54b6820bc747e9b00c6bb5d76.jpg')",
       }}
     >
-      {/* Black transparent overlay for readability */}
       <div className="min-h-screen bg-black/70 font-sans">
-        {/* Navigation Bar */}
+        {/* Navigation */}
         <nav className="flex items-center p-8 bg-black/50 text-xl justify-between">
-          {/* Logo and Brand */}
           <a href="/" className="flex items-center gap-3 mr-8">
-            <img src="https://scontent.fkul10-1.fna.fbcdn.net/v/t39.30808-6/239936175_342324124259247_2241240302739337307_n.png?_nc_cat=110&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OiPobw0uxKEQ7kNvwFpCej5&_nc_oc=AdnySHY-p4vNJ_WilO7nLkiPgWvv8X1yqA2MWyvPRo3pO_bKHdAalHT6Yxl6kOHL9E8&_nc_zt=23&_nc_ht=scontent.fkul10-1.fna&_nc_gid=HtED01grQpvthOczf0nTUg&oh=00_AfM4d7K-cw-qeMA6bI1pM1OKfNk9DtFmeUk8FirU59BUGw&oe=68683232" alt="Al-Fateh Steakhouse Logo" className="h-10 w-10 rounded-lg" />
+            <img src="/images/logo.png" alt="Al-Fateh Steakhouse Logo" className="h-10 w-10 rounded-lg" />
             <span className="text-2xl font-bold uppercase text-white">Al-Fateh</span>
           </a>
-          {/* Nav links right */}
           <div className="flex items-center gap-6 text-lg">
-            <a href="/" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Home</a>
-            <a href="/menu" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Menu</a>
-            <a href="/reservation" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Reservation</a>
-            <a href="/review" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">Review</a>
-            <a href="/about" className="no-underline text-white hover:text-orange-300 transition-colors duration-300">About</a>
-            {/* Auth section */}
-            {/* Dummy auth for now, replace with real auth logic if needed */}
-            <button onClick={() => router.visit('/login')} title="Login" className="text-white hover:text-orange-300 transition-colors duration-300 ml-4">
+            <a href="/" className="no-underline text-white hover:text-orange-300">Home</a>
+            <a href="/menu" className="no-underline text-white hover:text-orange-300">Menu</a>
+            <a href="/reservation" className="no-underline text-white hover:text-orange-300">Reservation</a>
+            <a href="/review" className="no-underline text-white hover:text-orange-300">Review</a>
+            <a href="/about" className="no-underline text-white hover:text-orange-300">About</a>
+            <button onClick={() => router.visit('/login')} title="Login" className="text-white hover:text-orange-300 ml-4">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l3-3m0 0l-3-3m3 3H9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 15l3-3m0 0l-3-3m3 3H9" />
               </svg>
             </button>
           </div>
@@ -83,44 +83,13 @@ export default function ReviewPage() {
             <p className="text-gray-300 mt-2">See what our guests are saying about Al-Fateh Steakhouse.</p>
           </div>
 
-          {/* Past Reviews */}
-            {/* Filter by Rating */}
-            <div className="flex gap-3 mb-4 items-center">
-              <span className="text-white font-medium">Filter by rating:</span>
-          {[0, 1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              onClick={() => setFilterRating(star)}
-              className={`px-3 py-1 rounded ${
-              filterRating === star
-                ? 'bg-yellow-400 text-black font-bold'
-                : 'bg-black/40 text-yellow-400 border border-yellow-400'
-              }`}
-            >
-              {star === 0 ? 'All' : `${star}★`}
-            </button>
-          ))}
-          </div>
-          <section className="space-y-6 mb-12 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-yellow-400 scrollbar-track-black/30">
-            {reviews
-              .filter((review) => filterRating === 0 || review.rating === filterRating)
-              .map((review) => (
-                <div key={review.id} className="p-4 flex gap-4 bg-zinc-900/80 rounded-lg shadow border border-yellow-500/30">
-                  <img
-                    src={review.image_url}
-                    alt={review.name}
-                    className="w-14 h-14 rounded-full object-cover border border-yellow-500/40"
-                  />
-                  <div>
-                    <h3 className="font-semibold text-lg text-yellow-300">{review.name}</h3>
-                    <div className="text-yellow-400 mb-2">{renderStars(review.rating)}</div>
-                    <p className="text-gray-200">{review.comment}</p>
-                  </div>
-                </div>
-              ))}
+          {/* Elfsight Google Reviews Widget */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-yellow-300 mb-4 text-center">Google Reviews</h2>
+            <div className="elfsight-app-bd736aba-8451-48e9-b16b-8af329482e30" data-elfsight-app-lazy></div>
           </section>
 
-          {/* New Review Form */}
+          {/* Optional: Local Review Form */}
           <section className="space-y-5">
             <h2 className="text-2xl font-bold text-yellow-300">Leave a Review</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -139,9 +108,7 @@ export default function ReviewPage() {
                     <span
                       key={star}
                       onClick={() => setData('rating', star)}
-                      className={`text-2xl ${
-                        data.rating >= star ? 'text-yellow-400' : 'text-gray-500'
-                      } hover:scale-110 transition`}
+                      className={`text-2xl ${data.rating >= star ? 'text-yellow-400' : 'text-gray-500'} hover:scale-110 transition`}
                       style={{ cursor: 'pointer' }}
                     >
                       ★
