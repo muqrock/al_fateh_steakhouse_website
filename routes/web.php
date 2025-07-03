@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+// use Illuminate\Support\Facades\Auth; (moved to top)
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -59,25 +60,55 @@ Route::post('/review', [ReviewController::class, 'store']);
 Route::get('/reservation', [ReservationController::class, 'index'])->name('reservation.index');
 Route::post('/reservation', [ReservationController::class, 'store'])->name('reservation.store');
 
-// Authenticated Routes
+// Customer-only authenticated routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
-    
-    Route::get('/order', function () {
-        return Inertia::render('OrderPage');
-    })->name('order');
+    Route::group([
+        'middleware' => function ($request, $next) {
+            if (Auth::check() && Auth::user()->role === 'customer') {
+                return $next($request);
+            }
+            if (Auth::check() && Auth::user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('login');
+        }
+    ], function () {
+        Route::get('/dashboard', function () {
+            return Inertia::render('Dashboard');
+        })->name('dashboard');
+        Route::get('/order', function () {
+            return Inertia::render('OrderPage');
+        })->name('order');
+    });
 });
 
-// Admin Routes
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin', function () {
-        return Inertia::render('AdminDashboard');
+use Illuminate\Support\Facades\Auth;
+
+// Admin login/logout routes
+Route::get('/admin/login', [\App\Http\Controllers\Auth\AdminSessionController::class, 'create'])->name('admin.login');
+Route::post('/admin/login', [\App\Http\Controllers\Auth\AdminSessionController::class, 'store']);
+Route::post('/admin/logout', [\App\Http\Controllers\Auth\AdminSessionController::class, 'destroy'])->name('admin.logout');
+
+// Admin protected routes using closure middleware
+Route::middleware(['web'])->group(function () {
+    Route::group([
+        'middleware' => function ($request, $next) {
+            if (Auth::check() && Auth::user()->role === 'admin') {
+                return $next($request);
+            }
+            if (Auth::check()) {
+                return redirect()->route('dashboard');
+            }
+            return redirect()->route('admin.login');
+        }
+    ], function () {
+        Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('admin.users');
+        Route::get('/admin/reservations', [\App\Http\Controllers\AdminController::class, 'reservations'])->name('admin.reservations');
+        Route::get('/admin/reviews', [\App\Http\Controllers\AdminController::class, 'reviews'])->name('admin.reviews');
+        Route::get('/admin/menu', [MenuController::class, 'index'])->name('admin.menu.index');
+        Route::resource('admin/menu', MenuController::class)->except(['index']);
     });
-    
-    Route::get('/admin/menu', [MenuController::class, 'index'])->name('admin.menu.index');
-    Route::resource('admin/menu', MenuController::class)->except(['index']);
 });
 
 // Include other route files

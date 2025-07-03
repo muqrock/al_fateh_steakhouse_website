@@ -26,4 +26,15 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function handle(Request $request, Closure $next)
+    {
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return $next($request);
+        }
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+        return redirect()->route('admin.login');
+    }
 }

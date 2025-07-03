@@ -108,7 +108,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <div className="flex justify-center gap-4 mb-6">
+        <div className="flex justify-center gap-4 mb-4">
           <button
             onClick={() => setMode('login')}
             className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
@@ -236,6 +236,7 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
       </div>
+      {/* Admin login link removed as requested */}
     </div>
   );
 };

@@ -78,11 +78,7 @@ const AdminMenuList: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    router.post('/logout', {}, {
-      onSuccess: () => router.visit('/')
-    });
-  };
+  // Remove unused handleLogout, use sidebar logout form instead
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f6f2' }}>
@@ -126,7 +122,24 @@ const AdminMenuList: React.FC = () => {
             </Link>
           ))}
         </nav>
-        <div style={{ textAlign: 'center', fontSize: 12, marginTop: 40, color: '#e0cfc2' }}>
+        {/* Logout button above copyright footer */}
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            fetch('/admin/logout', { method: 'POST', credentials: 'include', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+              .then(() => window.location.href = '/');
+          }}
+          style={{ width: '100%', textAlign: 'center', marginBottom: 8 }}
+        >
+          <button
+            type="submit"
+            className="w-11/12 mb-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition"
+            style={{ margin: '0 auto', display: 'block' }}
+          >
+            Log out
+          </button>
+        </form>
+        <div style={{ textAlign: 'center', fontSize: 12, marginTop: 8, color: '#e0cfc2' }}>
           &copy; {new Date().getFullYear()} Al-Fateh Steakhouse
         </div>
       </aside>
