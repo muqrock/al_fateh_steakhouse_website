@@ -259,18 +259,37 @@ const handleSubmit = async (e: React.FormEvent) => {
                     step="0.01"
                   />
                 </div>
-                <div>
-                  <label className="block font-semibold">Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
-                    className="w-full text-black dark:text-white"
-                  />
-                  {editMenu?.image && (
-                    <img src={`/storage/${editMenu.image}`} alt="Current" className="h-16 w-16 object-cover rounded mt-2" />
-                  )}
-                </div>
+<div>
+  <label className="block font-semibold mb-2">Image</label>
+  
+  <div className="relative w-full h-40 border-2 border-dashed border-gray-400 rounded flex justify-center items-center cursor-pointer hover:border-orange-500 transition"
+       onClick={() => document.getElementById('imageInput')?.click()}>
+    {data.image ? (
+      <img
+        src={URL.createObjectURL(data.image)}
+        alt="Preview"
+        className="h-full object-contain rounded"
+      />
+    ) : editMenu?.image ? (
+      <img
+        src={`/storage/${editMenu.image}`}
+        alt="Current"
+        className="h-full object-contain rounded"
+      />
+    ) : (
+      <span className="text-gray-500 dark:text-gray-300 text-sm text-center">Click to select an image</span>
+    )}
+  </div>
+  
+  <input
+    id="imageInput"
+    type="file"
+    accept="image/*"
+    onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
+    className="hidden"
+  />
+</div>
+
                 {errors && (
                   <div className="text-red-600 text-sm">
                     {Object.values(errors).map((err, i) => (
