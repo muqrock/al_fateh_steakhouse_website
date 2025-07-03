@@ -143,7 +143,7 @@ const LoginPage: React.FC = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+                className={`w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter your name"
@@ -163,7 +163,7 @@ const LoginPage: React.FC = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+              className={`w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter your email"
@@ -182,7 +182,7 @@ const LoginPage: React.FC = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+              className={`w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
                 errors.password ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Enter your password"
@@ -202,7 +202,7 @@ const LoginPage: React.FC = () => {
                 name="password_confirmation"
                 value={formData.password_confirmation}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
+                className={`w-full px-4 py-2 border rounded-lg text-black focus:ring-2 focus:ring-orange-400 focus:border-orange-400 ${
                   errors.password_confirmation ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Confirm your password"
