@@ -13,6 +13,7 @@ type Review = {
 
 interface PageProps {
   reviews: Review[];
+  [key: string]: unknown;
 }
 
 export default function ReviewPage() {
