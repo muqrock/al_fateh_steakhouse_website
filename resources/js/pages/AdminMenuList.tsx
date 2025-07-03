@@ -53,26 +53,51 @@ const AdminMenuList: React.FC = () => {
     reset();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  try {
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('category', data.category);
     formData.append('price', data.price);
-    if (data.image) formData.append('image', data.image);
-    const fetchOptions = {
-      method: 'POST',
-      credentials: 'include' as RequestCredentials,
-      body: formData,
-    };
-    if (editMenu) {
-      await fetch(`/admin/menu/${editMenu.id}?_method=PUT`, fetchOptions);
-      closeModal();
-    } else {
-      await fetch('/admin/menu', fetchOptions);
-      closeModal();
+    
+    if (data.image) {
+      formData.append('image', data.image);
     }
-  };
+
+    if (editMenu) {
+      // For updates
+      await router.post(`/admin/menu/${editMenu.id}`, {
+        _method: 'PUT',
+        ...Object.fromEntries(formData),
+      }, {
+        forceFormData: true,
+        onSuccess: () => {
+          closeModal();
+          router.reload();
+        },
+        onError: (errors) => {
+          console.error('Update error:', errors);
+        }
+      });
+    } else {
+      // For new items
+      await router.post('/admin/menu', formData, {
+        forceFormData: true,
+        onSuccess: () => {
+          closeModal();
+          router.reload();
+        },
+        onError: (errors) => {
+          console.error('Create error:', errors);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error submitting form:', error);
+  }
+};
 
   const handleDelete = (id: number) => {
     if (confirm('Delete this menu item?')) {

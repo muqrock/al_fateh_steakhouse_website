@@ -5,11 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
-
 use Inertia\Inertia;
-
-
 
 class MenuController extends Controller
 {
@@ -22,9 +18,6 @@ class MenuController extends Controller
         return inertia('AdminMenuList', [
             'menus' => $menu_items
         ]);
-
-        $menuItems = MenuItem::all()->groupBy('category');
-        return Inertia::render('MenuPage', ['menu' => $menuItems]);
     }
 
     /**
@@ -32,7 +25,7 @@ class MenuController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('AdminMenuList');
     }
 
     /**
@@ -42,19 +35,24 @@ class MenuController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'image' => 'nullable|image|max:2048',
+            'category' => 'nullable|string|max:255', // Added category validation
+            'price' => 'required|numeric|min:0', // Added min:0 validation
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Added mime types
         ]);
 
         $menu_item = new MenuItem();
         $menu_item->name = $validated['name'];
+        $menu_item->category = $validated['category'] ?? null; // Handle null category
         $menu_item->price = $validated['price'];
+        
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('menu_items', 'public');
             $menu_item->image = $path;
         }
+        
         $menu_item->save();
-        return redirect()->back();
+        
+        return redirect()->back()->with('success', 'Menu item created successfully');
     }
 
     /**
@@ -70,7 +68,9 @@ class MenuController extends Controller
      */
     public function edit(MenuItem $menu)
     {
-        //
+        return Inertia::render('AdminMenuList', [
+            'editMenu' => $menu
+        ]);
     }
 
     /**
@@ -80,18 +80,27 @@ class MenuController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'image' => 'nullable|image|max:2048',
+            'category' => 'nullable|string|max:255', // Added category
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $menu->name = $validated['name'];
+        $menu->category = $validated['category'] ?? null;
         $menu->price = $validated['price'];
+        
         if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($menu->image) {
+                Storage::disk('public')->delete($menu->image);
+            }
             $path = $request->file('image')->store('menu_items', 'public');
             $menu->image = $path;
         }
+        
         $menu->save();
-        return redirect()->back();
+        
+        return redirect()->back()->with('success', 'Menu item updated successfully');
     }
 
     /**
@@ -103,6 +112,6 @@ class MenuController extends Controller
             Storage::disk('public')->delete($menu->image);
         }
         $menu->delete();
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Menu item deleted successfully');
     }
 }

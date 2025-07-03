@@ -104,8 +104,18 @@ Route::middleware(['web'])->group(function () {
         Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('admin.users');
         Route::get('/admin/reservations', [\App\Http\Controllers\AdminController::class, 'reservations'])->name('admin.reservations');
         Route::get('/admin/reviews', [\App\Http\Controllers\AdminController::class, 'reviews'])->name('admin.reviews');
+        
+        // ==================== MENU ROUTES ADDITION ====================
         Route::get('/admin/menu', [MenuController::class, 'index'])->name('admin.menu.index');
-        Route::resource('admin/menu', MenuController::class)->except(['index']);
+        Route::get('/admin/menu/create', [MenuController::class, 'create'])->name('admin.menu.create');
+        Route::post('/admin/menu', [MenuController::class, 'store'])->name('admin.menu.store');
+        Route::get('/admin/menu/{menu}/edit', [MenuController::class, 'edit'])->name('admin.menu.edit');
+        Route::put('/admin/menu/{menu}', [MenuController::class, 'update'])->name('admin.menu.update');
+        Route::delete('/admin/menu/{menu}', [MenuController::class, 'destroy'])->name('admin.menu.destroy');
+        // In your admin routes group:
+        Route::post('/admin/menu', [MenuController::class, 'store'])->name('admin.menu.store');
+        Route::post('/admin/menu/{menu}', [MenuController::class, 'update'])->name('admin.menu.update');
+        // ==================== END MENU ROUTES ====================
     });
 });
 
