@@ -147,13 +147,14 @@ export default function OrderPage() {
                 </div>
 
                 <div className="text-center mt-6">
-                  <button
-                    className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-8 rounded-lg font-bold shadow-md"
-                    onClick={() => setConfirming(true)}
-                  >
-                    Confirm Order ({cart.length} items)
-                  </button>
-                </div>
+  <button
+    className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-8 rounded-lg font-bold shadow-md"
+    onClick={() => setConfirming(true)}
+  >
+    Confirm Order ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
+  </button>
+</div>
+
               </div>
             )}
           </>
