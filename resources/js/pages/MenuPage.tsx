@@ -36,10 +36,11 @@ const MenuItem = ({ imageUrl, name, price }: MenuItemProps) => (
     />
     <div className="p-4">
       <h3 className="font-bold text-lg text-gray-800">{name}</h3>
-      <p className="text-sm text-gray-600 mt-1">RM {price.toFixed(2)}</p>
+      <p className="text-sm text-gray-600 mt-1">RM {Number(price).toFixed(2)}</p>
     </div>
   </div>
 );
+
 
 const MenuSection = ({ title, children }: MenuSectionProps) => (
   <section className="mb-12">

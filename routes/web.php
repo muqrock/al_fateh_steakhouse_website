@@ -44,9 +44,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 // Public Routes
-Route::get('/menu', function () {
-    return Inertia::render('MenuPage');
-})->name('menu');
+Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 
 Route::get('/about', function () {
     return Inertia::render('AboutPage');

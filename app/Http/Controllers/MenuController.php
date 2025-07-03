@@ -15,20 +15,21 @@ class MenuController extends Controller
 public function index()
 {
     $menuItems = MenuItem::all();
-    
-    // For AdminMenuList
+
+    // If visiting /admin/menu, show admin view
     if (request()->is('admin*')) {
         return inertia('AdminMenuList', [
             'menus' => $menuItems
         ]);
     }
-    
-    // For MenuPage (group by category)
+
+    // For public MenuPage
     $groupedItems = $menuItems->groupBy('category');
     return inertia('MenuPage', [
         'menu' => $groupedItems
     ]);
 }
+
 
     /**
      * Show the form for creating a new resource.
