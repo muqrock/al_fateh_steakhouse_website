@@ -6,6 +6,11 @@ use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+
+use Inertia\Inertia;
+
+
+
 class MenuController extends Controller
 {
     /**
@@ -17,6 +22,9 @@ class MenuController extends Controller
         return inertia('AdminMenuList', [
             'menus' => $menu_items
         ]);
+
+        $menuItems = MenuItem::all()->groupBy('category');
+        return Inertia::render('MenuPage', ['menu' => $menuItems]);
     }
 
     /**
