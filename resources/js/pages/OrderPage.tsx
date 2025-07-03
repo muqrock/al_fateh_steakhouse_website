@@ -24,10 +24,10 @@ export default function OrderPage() {
   const [confirming, setConfirming] = useState(false);
 
   const addToCart = (item: MenuItem) => {
-    setCart((prev) => {
-      const existing = prev.find((i) => i.name === item.name);
+    setCart(prev => {
+      const existing = prev.find(i => i.name === item.name);
       if (existing) {
-        return prev.map((i) =>
+        return prev.map(i =>
           i.name === item.name ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
@@ -37,15 +37,36 @@ export default function OrderPage() {
 
   const updateQuantity = (name: string, qty: number) => {
     if (qty <= 0) {
-      setCart((prev) => prev.filter((i) => i.name !== name));
+      setCart(prev => prev.filter(i => i.name !== name));
     } else {
-      setCart((prev) =>
-        prev.map((i) => (i.name === name ? { ...i, quantity: qty } : i))
+      setCart(prev =>
+        prev.map(i => (i.name === name ? { ...i, quantity: qty } : i))
       );
     }
   };
 
+  const increment = (name: string) => {
+    updateQuantity(name, (cart.find(i => i.name === name)?.quantity || 1) + 1);
+  };
+
+  const decrement = (name: string) => {
+    updateQuantity(name, (cart.find(i => i.name === name)?.quantity || 1) - 1);
+  };
+
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const getCartGrouped = () => {
+    const grouped: { [category: string]: CartItem[] } = {};
+    for (const item of cart) {
+      const category = Object.entries(menu).find(([_, items]) =>
+        items.some(i => i.name === item.name)
+      )?.[0] || 'Uncategorized';
+
+      if (!grouped[category]) grouped[category] = [];
+      grouped[category].push(item);
+    }
+    return grouped;
+  };
 
   return (
     <div className="min-h-screen bg-amber-100 text-black font-sans">
@@ -58,40 +79,83 @@ export default function OrderPage() {
               <section key={category} className="mb-10">
                 <h2 className="text-xl font-bold mb-4 border-b pb-2 border-orange-300">{category}</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {items.map((item, idx) => (
-                    <div key={idx} className="bg-white rounded-lg shadow p-4">
-                      <img
-                        src={item.image}
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/333?text=Image';
-                        }}
-                        alt={item.name}
-                        className="w-full h-32 object-cover rounded mb-2"
-                      />
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-sm text-gray-600">RM {Number(item.price).toFixed(2)}
-</p>
-                      <button
-                        className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded"
-                        onClick={() => addToCart(item)}
-                      >
-                        Add to Cart
-                      </button>
-                    </div>
-                  ))}
+                  {items.map((item, idx) => {
+                    const inCart = cart.find(ci => ci.name === item.name);
+                    return (
+                      <div key={idx} className="bg-white rounded-lg shadow p-4 relative">
+                        <img
+                          src={item.image}
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/333?text=Image';
+                          }}
+                          alt={item.name}
+                          className="w-full h-32 object-cover rounded mb-2"
+                        />
+                        <h3 className="font-semibold text-lg">{item.name}</h3>
+                        <p className="text-sm text-gray-600">RM {Number(item.price).toFixed(2)}</p>
+
+
+                        {inCart ? (
+                          <div className="flex items-center justify-between mt-2">
+                            <button onClick={() => decrement(item.name)} className="bg-red-500 text-white px-3 py-1 rounded font-bold">-</button>
+                            <span className="font-semibold text-lg">{inCart.quantity}</span>
+                            <button onClick={() => increment(item.name)} className="bg-green-500 text-white px-3 py-1 rounded font-bold">+</button>
+                          </div>
+                        ) : (
+                          <button
+                            className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded"
+                            onClick={() => addToCart(item)}
+                          >
+                            Add to Cart
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             ))}
 
-            <div className="text-center mt-12">
-              <button
-                disabled={cart.length === 0}
-                onClick={() => setConfirming(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-8 rounded-lg font-bold shadow-md"
-              >
-                Confirm Order ({cart.length} items)
-              </button>
-            </div>
+            {cart.length > 0 && (
+              <div className="mt-12 bg-white rounded-lg p-6 shadow-md">
+                <h2 className="text-xl font-bold text-orange-800 mb-4">🛒 Cart Summary</h2>
+                {Object.entries(getCartGrouped()).map(([cat, items]) => (
+                  <div key={cat} className="mb-6">
+                    <h3 className="text-lg font-semibold border-b border-orange-200 pb-1 mb-2">{cat}</h3>
+                    {items.map(item => (
+                      <div key={item.name} className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-4">
+                          <img src={item.image} alt={item.name} className="h-10 w-10 object-cover rounded" />
+                          <div>
+                            <p className="font-semibold">{item.name}</p>
+                            <p className="text-sm text-gray-600">RM {Number(item.price).toFixed(2)}</p>
+
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <button onClick={() => decrement(item.name)} className="px-2 bg-red-500 text-white rounded">-</button>
+                          <span className="px-3">{item.quantity}</span>
+                          <button onClick={() => increment(item.name)} className="px-2 bg-green-500 text-white rounded">+</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                <div className="text-right font-bold text-lg mt-4">
+                  Total: RM {total.toFixed(2)}
+                </div>
+
+                <div className="text-center mt-6">
+                  <button
+                    className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-8 rounded-lg font-bold shadow-md"
+                    onClick={() => setConfirming(true)}
+                  >
+                    Confirm Order ({cart.length} items)
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
@@ -100,7 +164,8 @@ export default function OrderPage() {
               <div key={idx} className="flex justify-between items-center py-2 border-b">
                 <div>
                   <p className="font-semibold">{item.name}</p>
-                  <small className="text-gray-600">RM {item.price.toFixed(2)} x</small>
+                  <small className="text-gray-600">RM {Number(item.price).toFixed(2)} x</small>
+
                   <input
                     type="number"
                     min={1}
@@ -109,7 +174,8 @@ export default function OrderPage() {
                     className="ml-2 w-16 p-1 border rounded"
                   />
                 </div>
-                <p className="font-bold">RM {(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-bold">RM {Number(item.price * item.quantity).toFixed(2)}</p>
+
               </div>
             ))}
 
