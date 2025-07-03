@@ -12,13 +12,23 @@ class MenuController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $menu_items = MenuItem::all();
+public function index()
+{
+    $menuItems = MenuItem::all();
+    
+    // For AdminMenuList
+    if (request()->is('admin*')) {
         return inertia('AdminMenuList', [
-            'menus' => $menu_items
+            'menus' => $menuItems
         ]);
     }
+    
+    // For MenuPage (group by category)
+    $groupedItems = $menuItems->groupBy('category');
+    return inertia('MenuPage', [
+        'menu' => $groupedItems
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.
