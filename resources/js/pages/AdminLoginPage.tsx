@@ -15,21 +15,21 @@ export default function AdminLoginPage() {
         setError(errors.password || 'Login failed');
       },
       onSuccess: () => {
-        window.location = '/admin'; // Use window.location (not .href) for a hard reload
+        window.location.href = '/admin'; // Fixed this line
       },
       onFinish: () => setIsSubmitting(false),
     });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors">
+      <form className="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-sm" onSubmit={handleSubmit}>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Admin Login</h2>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Admin Password</label>
+          <label className="block text-gray-700 dark:text-gray-300 mb-2">Admin Password</label>
           <input
             type="password"
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white text-black dark:bg-gray-700 dark:text-white"
             value={password}
             onChange={e => setPassword(e.target.value)}
             disabled={isSubmitting}
@@ -37,8 +37,7 @@ export default function AdminLoginPage() {
           />
         </div>
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
-        {/* Debug: Show current password for troubleshooting (remove in production) */}
-        {/* <div className="text-xs text-gray-400">Entered: {password}</div> */}
+
         <button
           type="submit"
           className="w-full bg-orange-500 text-white py-2 rounded font-bold hover:bg-orange-600 transition"

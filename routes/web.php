@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-// use Illuminate\Support\Facades\Auth; (moved to top)
+use Illuminate\Support\Facades\Auth; // Moved to top
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -81,8 +81,6 @@ Route::middleware(['auth'])->group(function () {
         })->name('order');
     });
 });
-
-use Illuminate\Support\Facades\Auth;
 
 // Admin login/logout routes
 Route::get('/admin/login', [\App\Http\Controllers\Auth\AdminSessionController::class, 'create'])->name('admin.login');

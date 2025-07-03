@@ -18,6 +18,7 @@ interface MenuItem {
 
 interface PageProps {
   menus: MenuItem[];
+  [key: string]: any; // This allows for additional unknown props
 }
 
 const AdminMenuList: React.FC = () => {

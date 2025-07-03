@@ -8,6 +8,7 @@ interface PageProps {
       email: string;
     };
   };
+  [key: string]: any; // Added index signature
 }
 
 export default function HomePage() {

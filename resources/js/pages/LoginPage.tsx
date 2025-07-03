@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { usePage, router } from '@inertiajs/react';
 
 interface UserData {
-  name: string; // Changed from username to match Laravel's default
+  name: string;
   email: string;
   password: string;
   password_confirmation?: string;
@@ -10,6 +10,7 @@ interface UserData {
 
 interface PageProps {
   csrf_token: string;
+  [key: string]: any; // Added index signature
 }
 
 const LoginPage: React.FC = () => {
