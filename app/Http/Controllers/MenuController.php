@@ -6,14 +6,16 @@ use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
+use GuzzleHttp\Client;
 
 class MenuController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-public function index()
-{
+    public function index()
+    {
     $menuItems = MenuItem::all();
 
     // If visiting /admin/menu, show admin view
@@ -48,7 +50,7 @@ public function index()
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:255', // Added category validation
             'price' => 'required|numeric|min:0', // Added min:0 validation
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Added mime types
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic|max:2048', // Allow .heic
         ]);
 
         $menu_item = new MenuItem();
@@ -57,8 +59,8 @@ public function index()
         $menu_item->price = $validated['price'];
         
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('menu_items', 'public');
-            $menu_item->image = $path;
+            $url = $this->uploadToSupabase($request->file('image'));
+            $menu_item->image = $url;
         }
         
         $menu_item->save();
@@ -93,7 +95,7 @@ public function index()
             'name' => 'required|string|max:255',
             'category' => 'nullable|string|max:255', // Added category
             'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic|max:2048', // Allow .heic
         ]);
 
         $menu->name = $validated['name'];
@@ -101,12 +103,9 @@ public function index()
         $menu->price = $validated['price'];
         
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($menu->image) {
-                Storage::disk('public')->delete($menu->image);
-            }
-            $path = $request->file('image')->store('menu_items', 'public');
-            $menu->image = $path;
+            // No need to delete old image in Supabase for now
+            $url = $this->uploadToSupabase($request->file('image'));
+            $menu->image = $url;
         }
         
         $menu->save();
@@ -124,5 +123,37 @@ public function index()
         }
         $menu->delete();
         return redirect()->back()->with('success', 'Menu item deleted successfully');
+    }
+
+    private function uploadToSupabase($file)
+    {
+        $bucket = env('SUPABASE_BUCKET');
+        $supabaseUrl = env('SUPABASE_URL');
+        $serviceKey = env('SUPABASE_SERVICE_KEY');
+
+        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $path = "public/$filename"; // 'public' folder in your bucket
+
+        $client = new Client([
+            'base_uri' => "$supabaseUrl/storage/v1/",
+            'headers' => [
+                'Authorization' => "Bearer $serviceKey",
+                'apikey' => $serviceKey,
+            ],
+        ]);
+
+        $response = $client->post("object/$bucket/$path", [
+            'headers' => [
+                'Content-Type' => $file->getMimeType(),
+                'Cache-Control' => 'public, max-age=31536000',
+            ],
+            'body' => fopen($file->getRealPath(), 'r'),
+        ]);
+
+        if ($response->getStatusCode() === 200) {
+            // Construct public URL
+            return "$supabaseUrl/storage/v1/object/$bucket/$path";
+        }
+        return null;
     }
 }
