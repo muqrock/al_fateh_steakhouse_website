@@ -1,5 +1,6 @@
 import React from 'react';
 import { usePage, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react'; // at top if not already
 
 type MenuItem = {
   name: string;
@@ -113,14 +114,12 @@ export default function MenuPage() {
 )}
 
 
-          <div className="text-center mt-12">
-            <a 
-              href="/order" 
-              className="inline-block bg-orange-500 text-white py-4 px-8 text-lg rounded-lg font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:bg-orange-600 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-orange-400"
-            >
-              Order Now!
-            </a>
-          </div>
+<Link 
+  href="/order" 
+  className="inline-block bg-orange-500 text-white py-4 px-8 text-lg rounded-lg font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:bg-orange-600 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-orange-400"
+>
+  Order Now!
+</Link>
         </main>
 
         <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">

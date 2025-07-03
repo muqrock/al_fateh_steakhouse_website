@@ -1,136 +1,138 @@
 import React, { useState } from 'react';
+import { usePage, router } from '@inertiajs/react';
+
+interface MenuItem {
+  name: string;
+  price: number;
+  image: string;
+}
+
+interface PageProps {
+  menu: {
+    [category: string]: MenuItem[];
+  };
+  [key: string]: any; // Add this index signature
+}
+
+interface CartItem extends MenuItem {
+  quantity: number;
+}
 
 export default function OrderPage() {
-  const [form, setForm] = useState({
-    name: '',
-    contact: '',
-    item: '',
-    quantity: 1,
-    notes: '',
-  });
+  const { menu } = usePage<PageProps>().props;
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [confirming, setConfirming] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const addToCart = (item: MenuItem) => {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.name === item.name);
+      if (existing) {
+        return prev.map((i) =>
+          i.name === item.name ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      }
+      return [...prev, { ...item, quantity: 1 }];
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Order submitted! (Frontend only)');
-    // Backend logic will be added later.
+  const updateQuantity = (name: string, qty: number) => {
+    if (qty <= 0) {
+      setCart((prev) => prev.filter((i) => i.name !== name));
+    } else {
+      setCart((prev) =>
+        prev.map((i) => (i.name === name ? { ...i, quantity: qty } : i))
+      );
+    }
   };
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center font-sans"
-      style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?q=80&w=2940&auto=format&fit=crop')",
-      }}
-    >
-      <div className="bg-black/60 min-h-screen text-white flex flex-col">
-        {/* Navigation */}
-        <nav className="flex items-center p-8 bg-black/50 text-xl justify-between">
-          <a href="/" className="flex items-center gap-3 mr-8">
-            <img
-              src="https://scontent.fkul10-1.fna.fbcdn.net/v/t39.30808-6/239936175_342324124259247_2241240302739337307_n.png?_nc_cat=110&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OiPobw0uxKEQ7kNvwFpCej5&_nc_oc=AdnySHY-p4vNJ_WilO7nLkiPgWvv8X1yqA2MWyvPRo3pO_bKHdAalHT6Yxl6kOHL9E8&_nc_zt=23&_nc_ht=scontent.fkul10-1.fna&_nc_gid=HtED01grQpvthOczf0nTUg&oh=00_AfM4d7K-cw-qeMA6bI1pM1OKfNk9DtFmeUk8FirU59BUGw&oe=68683232"
-              alt="Al-Fateh Logo"
-              className="h-10 w-10 rounded-lg"
-            />
-            <span className="text-2xl font-bold uppercase text-white">Al-Fateh</span>
-          </a>
-          <div className="flex items-center gap-6 text-lg">
-            <a href="/" className="no-underline text-white hover:text-orange-300 transition">Home</a>
-            <a href="/menu" className="no-underline text-white hover:text-orange-300 transition">Menu</a>
-            <a href="/reservation" className="no-underline text-white hover:text-orange-300 transition">Reservation</a>
-            <a href="/review" className="no-underline text-white hover:text-orange-300 transition">Review</a>
-            <a href="/about" className="no-underline text-white hover:text-orange-300 transition">About</a>
-            <a href="/login" title="Login" className="text-white hover:text-orange-300 transition ml-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15"/>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l3-3m0 0l-3-3m3 3H9"/>
-              </svg>
-            </a>
-          </div>
-        </nav>
+    <div className="min-h-screen bg-amber-100 text-black font-sans">
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold text-orange-800 mb-6 text-center">Order Menu</h1>
 
-        {/* Order Form */}
-        <main className="flex-1 flex items-center justify-center px-4 py-12">
-          <div className="bg-white text-gray-900 rounded-xl shadow-2xl w-full max-w-2xl p-8">
-            <h2 className="text-3xl font-bold mb-6 text-center text-orange-600 uppercase">Place Your Order</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block font-semibold mb-1">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  value={form.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Contact Number</label>
-                <input
-                  type="tel"
-                  name="contact"
-                  required
-                  value={form.contact}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Menu Item</label>
-                <input
-                  type="text"
-                  name="item"
-                  required
-                  value={form.item}
-                  onChange={handleChange}
-                  placeholder="E.g. Classic Lamb Chop"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Quantity</label>
-                <input
-                  type="number"
-                  name="quantity"
-                  min="1"
-                  value={form.quantity}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Special Notes</label>
-                <textarea
-                  name="notes"
-                  rows={3}
-                  value={form.notes}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div className="text-center">
-                <button
-                  type="submit"
-                  className="bg-orange-500 text-white px-6 py-3 rounded-lg font-bold text-lg hover:bg-orange-600 transition hover:scale-105 shadow-lg shadow-orange-500/30 focus:outline-none focus:ring-4 focus:ring-orange-400"
-                >
-                  Submit Order
-                </button>
-              </div>
-            </form>
-          </div>
-        </main>
+        {!confirming ? (
+          <>
+            {Object.entries(menu).map(([category, items]) => (
+              <section key={category} className="mb-10">
+                <h2 className="text-xl font-bold mb-4 border-b pb-2 border-orange-300">{category}</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {items.map((item, idx) => (
+                    <div key={idx} className="bg-white rounded-lg shadow p-4">
+                      <img
+                        src={item.image}
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/333?text=Image';
+                        }}
+                        alt={item.name}
+                        className="w-full h-32 object-cover rounded mb-2"
+                      />
+                      <h3 className="font-semibold text-lg">{item.name}</h3>
+                      <p className="text-sm text-gray-600">RM {Number(item.price).toFixed(2)}
+</p>
+                      <button
+                        className="mt-3 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded"
+                        onClick={() => addToCart(item)}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
 
-        {/* Footer */}
-        <footer className="bg-black/70 text-white text-center py-4 text-sm">
-          &copy; 2025 Alfateh Steak House &mdash; Designed by Akatsuci
-        </footer>
+            <div className="text-center mt-12">
+              <button
+                disabled={cart.length === 0}
+                onClick={() => setConfirming(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-8 rounded-lg font-bold shadow-md"
+              >
+                Confirm Order ({cart.length} items)
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="bg-white rounded-lg p-6 shadow-md max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-4 text-orange-800">Order Summary</h2>
+            {cart.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-center py-2 border-b">
+                <div>
+                  <p className="font-semibold">{item.name}</p>
+                  <small className="text-gray-600">RM {item.price.toFixed(2)} x</small>
+                  <input
+                    type="number"
+                    min={1}
+                    value={item.quantity}
+                    onChange={(e) => updateQuantity(item.name, parseInt(e.target.value))}
+                    className="ml-2 w-16 p-1 border rounded"
+                  />
+                </div>
+                <p className="font-bold">RM {(item.price * item.quantity).toFixed(2)}</p>
+              </div>
+            ))}
+
+            <div className="mt-6 text-right font-bold text-lg">
+              Total: RM {total.toFixed(2)}
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <button
+                className="bg-gray-400 hover:bg-gray-500 text-white py-2 px-6 rounded"
+                onClick={() => setConfirming(false)}
+              >
+                Back
+              </button>
+              <button
+                className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded"
+                onClick={() => alert('Proceed to payment...')}
+              >
+                Proceed to Pay
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

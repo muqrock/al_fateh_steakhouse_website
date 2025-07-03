@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReservationController;
+use App\Models\MenuItem;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,8 +23,12 @@ use App\Http\Controllers\ReservationController;
 
 // Order Login Route
 Route::get('/order', function () {
-    return Inertia::render('OrderPage');
+    $menuItems = MenuItem::all()->groupBy('category');
+    return Inertia::render('OrderPage', [
+        'menu' => $menuItems,
+    ]);
 })->name('order');
+
 
 // Homepage Route
 Route::get('/', function () {
@@ -59,6 +64,7 @@ Route::get('/reservation', [ReservationController::class, 'index'])->name('reser
 Route::post('/reservation', [ReservationController::class, 'store'])->name('reservation.store');
 
 // Customer-only authenticated routes
+// Customer-only authenticated routes
 Route::middleware(['auth'])->group(function () {
     Route::group([
         'middleware' => function ($request, $next) {
@@ -74,11 +80,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', function () {
             return Inertia::render('Dashboard');
         })->name('dashboard');
-        Route::get('/order', function () {
-            return Inertia::render('OrderPage');
-        })->name('order');
+
+        // ❌ REMOVE this line:
+        // Route::get('/order', function () {
+        //     return Inertia::render('OrderPage');
+        // })->name('order');
     });
 });
+
 
 // Admin login/logout routes
 Route::get('/admin/login', [\App\Http\Controllers\Auth\AdminSessionController::class, 'create'])->name('admin.login');
