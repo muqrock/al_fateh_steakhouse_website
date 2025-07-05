@@ -71,6 +71,17 @@ export default function OrderPage() {
   return (
     <div className="min-h-screen bg-amber-100 text-black font-sans">
       <div className="max-w-7xl mx-auto py-8 px-4">
+        {/* Minimalist Back Button at the top */}
+        <button
+          className="mb-6 flex items-center gap-2 text-white bg-orange-600 hover:bg-orange-700 font-semibold px-4 py-2 rounded-full transition-colors duration-150 border border-orange-700 shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 w-fit drop-shadow-lg"
+          onClick={() => window.history.back()}
+          aria-label="Go back"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+          <span className="text-base">Back</span>
+        </button>
         <h1 className="text-3xl font-bold text-orange-800 mb-6 text-center">Order Menu</h1>
 
         {!confirming ? (
