@@ -51,11 +51,15 @@ const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ transparent = false, cu
     ? 'hover:text-orange-300' 
     : 'hover:text-orange-600';
 
-  const activeStyle = 'text-orange-400 font-semibold';
+  const activeStyle = 'text-orange-600 font-bold';
 
   const getNavLinkClass = (page: string) => {
-    const baseClass = `no-underline transition-colors duration-300 ${textStyle} ${hoverStyle}`;
-    return currentPage === page ? `${baseClass} ${activeStyle}` : baseClass;
+    const baseClass = `no-underline transition-colors duration-300 ${hoverStyle}`;
+    if (currentPage === page) {
+      return `${baseClass} ${activeStyle}`;
+    } else {
+      return `${baseClass} ${textStyle}`;
+    }
   };
 
   return (

@@ -27,14 +27,16 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({
         backgroundImage: backgroundImage && backgroundImage !== 'none' ? `url('${backgroundImage}')` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
       }
     : { 
         minHeight: '100vh',
         backgroundImage: backgroundImage && backgroundImage !== 'none' ? `url('${backgroundImage}')` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
       };
 
   const contentStyle = fullHeight 
