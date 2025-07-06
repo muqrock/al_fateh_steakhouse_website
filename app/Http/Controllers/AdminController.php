@@ -18,11 +18,140 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
+        // Get current date
+        $today = now()->toDateString();
+        $currentMonth = now()->startOfMonth();
+        $currentYear = now()->startOfYear();
+
+        // Basic counts
+        $totalUsers = User::where('role', 'customer')->count();
+        $totalAdmins = User::where('role', 'admin')->count();
+        $totalReservations = Reservation::count();
+        $totalReviews = Review::count();
+        $totalMenuItems = MenuItem::count();
+
+        // Today's statistics
+        $todayReservations = Reservation::whereDate('created_at', $today)->count();
+        $todayReviews = Review::whereDate('created_at', $today)->count();
+        $todayRegistrations = User::whereDate('created_at', $today)->count();
+
+        // This month's statistics
+        $monthlyReservations = Reservation::where('created_at', '>=', $currentMonth)->count();
+        $monthlyReviews = Review::where('created_at', '>=', $currentMonth)->count();
+        $monthlyRegistrations = User::where('created_at', '>=', $currentMonth)->count();
+
+        // Popular menu items (based on review mentions - you can adjust this logic)
+        $popularMenuItems = MenuItem::withCount(['reviews' => function ($query) {
+                $query->whereNotNull('menu_item_id');
+            }])
+            ->orderByDesc('reviews_count')
+            ->limit(5)
+            ->get();
+
+        // If no items have reviews, just get the first 5 menu items
+        if ($popularMenuItems->isEmpty()) {
+            $popularMenuItems = MenuItem::limit(5)->get();
+        }
+
+        $popularMenuItems = $popularMenuItems->map(function ($item) {
+            return [
+                'name' => $item->name,
+                'category' => $item->category,
+                'price' => $item->price,
+                'reviews_count' => $item->reviews_count ?? 0
+            ];
+        });
+
+        // Additional analytics for restaurant management
+        $weeklyReservations = Reservation::where('created_at', '>=', now()->subWeek())->count();
+        $weeklyReviews = Review::where('created_at', '>=', now()->subWeek())->count();
+        $yesterdayReservations = Reservation::whereDate('created_at', now()->subDay())->count();
+        
+        // Menu item distribution by category
+        $menuByCategory = MenuItem::selectRaw('category, COUNT(*) as count')
+            ->groupBy('category')
+            ->pluck('count', 'category')
+            ->toArray();
+
+        // Customer growth trend
+        $customerGrowthThisMonth = User::where('role', 'customer')
+            ->where('created_at', '>=', $currentMonth)
+            ->count();
+        $customerGrowthLastMonth = User::where('role', 'customer')
+            ->where('created_at', '>=', now()->subMonth()->startOfMonth())
+            ->where('created_at', '<', $currentMonth)
+            ->count();
+        
+        $customerGrowthPercentage = $customerGrowthLastMonth > 0 
+            ? round((($customerGrowthThisMonth - $customerGrowthLastMonth) / $customerGrowthLastMonth) * 100, 1)
+            : 100;
+
+        // Recent activity
+        $recentReservations = Reservation::latest()
+            ->limit(5)
+            ->get()
+            ->map(function ($reservation) {
+                return [
+                    'name' => $reservation->name,
+                    'date' => $reservation->reservation_date,
+                    'time' => $reservation->reservation_time,
+                    'guests' => $reservation->guests,
+                    'created_at' => $reservation->created_at->format('M d, Y H:i')
+                ];
+            });
+
+        $recentReviews = Review::with('user')
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(function ($review) {
+                return [
+                    'user_name' => $review->user ? $review->user->name : ($review->name ?? 'Anonymous'),
+                    'rating' => $review->rating ?? 'N/A',
+                    'comment' => substr($review->comment ?? '', 0, 100) . (strlen($review->comment ?? '') > 100 ? '...' : ''),
+                    'created_at' => $review->created_at->format('M d, Y H:i')
+                ];
+            });
+
+        // Average rating
+        $averageRating = Review::whereNotNull('rating')->avg('rating');
+
+        // Revenue estimation (if you track prices in reservations)
+        $estimatedMonthlyRevenue = MenuItem::avg('price') * $monthlyReservations;
+
         $stats = [
-            'users' => User::count(),
-            'reservations' => Reservation::count(),
-            'reviews' => Review::count(),
-            'menu_items' => MenuItem::count(),
+            // Totals
+            'total_users' => $totalUsers,
+            'total_admins' => $totalAdmins,
+            'total_reservations' => $totalReservations,
+            'total_reviews' => $totalReviews,
+            'total_menu_items' => $totalMenuItems,
+
+            // Today's stats
+            'today_reservations' => $todayReservations,
+            'today_reviews' => $todayReviews,
+            'today_registrations' => $todayRegistrations,
+
+            // Monthly stats
+            'monthly_reservations' => $monthlyReservations,
+            'monthly_reviews' => $monthlyReviews,
+            'monthly_registrations' => $monthlyRegistrations,
+
+            // Insights
+            'average_rating' => round($averageRating, 1),
+            'estimated_monthly_revenue' => round($estimatedMonthlyRevenue, 2),
+            'popular_menu_items' => $popularMenuItems,
+            'recent_reservations' => $recentReservations,
+            'recent_reviews' => $recentReviews,
+            
+            // Additional analytics
+            'weekly_reservations' => $weeklyReservations,
+            'weekly_reviews' => $weeklyReviews,
+            'yesterday_reservations' => $yesterdayReservations,
+            'menu_by_category' => $menuByCategory,
+            'customer_growth_percentage' => $customerGrowthPercentage,
+            'customer_growth_this_month' => $customerGrowthThisMonth,
+            'customer_growth_last_month' => $customerGrowthLastMonth,
         ];
 
         return Inertia::render('Admin/Dashboard', [
@@ -66,6 +195,22 @@ class AdminController extends Controller
         $reviews = Review::with('user')->latest()->paginate(10);
         return Inertia::render('Admin/Reviews', [
             'reviews' => $reviews
+        ]);
+    }
+
+    /**
+     * Show customer management page.
+     *
+     * @return \Inertia\Response
+     */
+    public function customers()
+    {
+        $customers = User::where('role', 'customer')
+            ->latest()
+            ->paginate(20);
+        
+        return Inertia::render('Admin/Customers', [
+            'customers' => $customers
         ]);
     }
 }

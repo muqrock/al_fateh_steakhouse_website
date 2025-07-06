@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
+import CustomerLayout from '@/layouts/CustomerLayout';
 
 interface MenuItem {
   name: string;
@@ -7,11 +8,20 @@ interface MenuItem {
   image: string;
 }
 
+interface AuthUser {
+  name: string;
+  email: string;
+  role: string;
+}
+
 interface PageProps {
   menu: {
     [category: string]: MenuItem[];
   };
-  [key: string]: any; // Add this index signature
+  auth: {
+    user?: AuthUser;
+  };
+  [key: string]: any;
 }
 
 interface CartItem extends MenuItem {
@@ -19,9 +29,23 @@ interface CartItem extends MenuItem {
 }
 
 export default function OrderPage() {
-  const { menu } = usePage<PageProps>().props;
+  const { menu, auth } = usePage<PageProps>().props;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [confirming, setConfirming] = useState(false);
+
+  // Check if user is logged in as customer
+  const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
+
+  useEffect(() => {
+    if (!isCustomerLoggedIn) {
+      router.visit('/login');
+    }
+  }, [isCustomerLoggedIn]);
+
+  // Don't render page content if not a logged-in customer
+  if (!isCustomerLoggedIn) {
+    return null;
+  }
 
   const addToCart = (item: MenuItem) => {
     setCart(prev => {
@@ -69,7 +93,7 @@ export default function OrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-amber-100 text-black font-sans">
+    <CustomerLayout currentPage="order" title="Order">
       <div className="max-w-7xl mx-auto py-8 px-4">
         {/* Minimalist Back Button at the top */}
         <button
@@ -211,7 +235,12 @@ export default function OrderPage() {
             </div>
           </div>
         )}
+        
+        {/* Footer */}
+        <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">
+          &copy; {new Date().getFullYear()} Al-Fateh Steak House &mdash; Designed by Akatsuci
+        </footer>
       </div>
-    </div>
+    </CustomerLayout>
   );
 }

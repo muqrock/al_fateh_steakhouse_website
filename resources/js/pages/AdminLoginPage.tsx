@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Head } from '@inertiajs/react';
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
@@ -23,6 +23,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors">
+      <Head title="Al-Fateh Steak House | Admin Login" />
       <form className="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-sm" onSubmit={handleSubmit}>
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Admin Login</h2>
         <div className="mb-4">

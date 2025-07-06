@@ -2,7 +2,15 @@
 
 namespace App\Http;
 
-use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\    /**
+     * The application's route middleware.
+     * Note: In Laravel 12+, middleware aliases are registered in bootstrap/app.php
+     *
+     * @var array
+     */
+    protected $routeMiddleware = [
+        // Middleware aliases are now registered in bootstrap/app.php
+    ];ernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
@@ -52,9 +60,9 @@ class Kernel extends HttpKernel
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
+        'password.confirm' => \Illuminate\Http\Middleware\RequirePassword::class,
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        // Custom middleware aliases are registered in bootstrap/app.php for Laravel 12+
     ];
 }

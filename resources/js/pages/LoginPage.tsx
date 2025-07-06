@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { usePage, router } from '@inertiajs/react';
+import { usePage, router, Head } from '@inertiajs/react';
 
 interface UserData {
   name: string;
@@ -108,6 +108,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-4">
+      <Head title={`Al-Fateh Steak House | ${mode === 'login' ? 'Login' : 'Register'}`} />
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <div className="flex justify-center gap-4 mb-4">
           <button

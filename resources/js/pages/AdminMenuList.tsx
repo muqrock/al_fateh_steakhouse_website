@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import { useForm, usePage, router, Link } from '@inertiajs/react';
-
-const sidebarLinks = [
-  { name: 'Dashboard', path: '/admin', icon: '🏠' },
-  { name: 'Menu List', path: '/admin/menu', icon: '🍽️' },
-  { name: 'Customer List', path: '/admin/customers', icon: '👥' },
-  { name: 'Review List', path: '/admin/reviews', icon: '📝' },
-];
+import { useForm, usePage, router } from '@inertiajs/react';
+import AdminLayout from '@/layouts/AdminLayout';
 
 const categories = [
   'FRIED CHICKEN',
@@ -41,7 +35,6 @@ const AdminMenuList: React.FC = () => {
   const { menus } = usePage<PageProps>().props;
   const [showModal, setShowModal] = useState(false);
   const [editMenu, setEditMenu] = useState<MenuItem | null>(null);
-  const [active, setActive] = useState('Menu List');
 
   const { data, setData, processing, reset, errors } = useForm({
     name: '',
@@ -118,63 +111,8 @@ const AdminMenuList: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
-      {/* Sidebar */}
-      <aside style={{
-        width: 240,
-        background: '#4e2e1e',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '32px 0',
-        boxShadow: '2px 0 8px rgba(0,0,0,0.04)',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontWeight: 700, fontSize: 20, letterSpacing: 1 }}>Admin Panel</div>
-        </div>
-        <nav style={{ flex: 1 }}>
-          {sidebarLinks.map(link => (
-            <Link
-              key={link.name}
-              href={link.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '12px 32px',
-                color: link.name === 'Menu List' ? '#f8c471' : '#fff',
-                background: link.name === 'Menu List' ? '#3b2012' : 'transparent',
-                fontWeight: link.name === 'Menu List' ? 600 : 400,
-                borderLeft: link.name === 'Menu List' ? '4px solid #f8c471' : '4px solid transparent',
-              }}
-              onClick={() => setActive(link.name)}
-            >
-              <span style={{ marginRight: 16, fontSize: 20 }}>{link.icon}</span>
-              {link.name}
-            </Link>
-          ))}
-        </nav>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            fetch('/admin/logout', {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-              }
-            }).then(() => window.location.href = '/');
-          }}
-        >
-          <button type="submit" className="mx-auto mb-4 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded">
-            Log out
-          </button>
-        </form>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-12">
-        <h2 className="text-3xl font-bold mb-6 text-orange-900 dark:text-yellow-400">Menu List</h2>
+    <AdminLayout currentPage="Menu List">
+      <h2 className="text-3xl font-bold mb-6 text-orange-900 dark:text-yellow-400">Menu List</h2>
         <button
           className="mb-4 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded font-bold"
           onClick={openAddModal}
@@ -320,9 +258,8 @@ const AdminMenuList: React.FC = () => {
             </div>
           </div>
         )}
-      </main>
-    </div>
-  );
-};
+      </AdminLayout>
+    );
+  };
 
 export default AdminMenuList;

@@ -48,7 +48,22 @@ class AdminSessionController extends Controller
      */
     public function destroy(Request $request)
     {
-        Auth::logout();
-        return redirect('/');
+        // Get the current user before logout
+        $currentUser = Auth::user();
+        
+        // Only logout if current user is an admin
+        if ($currentUser && $currentUser->role === 'admin') {
+            Auth::logout();
+            
+            // Clear all session data
+            $request->session()->flush();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+            // Clear any cached user data
+            $request->session()->forget('auth');
+        }
+        
+        return redirect('/admin/login');
     }
 }

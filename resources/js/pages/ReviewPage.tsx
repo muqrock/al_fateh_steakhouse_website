@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
+import CustomerLayout from '@/layouts/CustomerLayout';
 
 type Review = {
   id: number;
@@ -10,13 +11,22 @@ type Review = {
   image_url: string;
 };
 
+interface AuthUser {
+  name: string;
+  email: string;
+  role: string;
+}
+
 interface PageProps {
   reviews: Review[];
+  auth: {
+    user?: AuthUser;
+  };
   [key: string]: unknown;
 }
 
 export default function ReviewPage() {
-  const { reviews } = usePage<PageProps>().props;
+  const { reviews, auth } = usePage<PageProps>().props;
   const [filterRating, setFilterRating] = useState(0);
   const { data, setData, post, processing, reset, errors } = useForm({
     name: '',
@@ -24,6 +34,9 @@ export default function ReviewPage() {
     rating: 0,
     image_url: '',
   });
+
+  // Check if user is logged in as customer
+  const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -34,6 +47,13 @@ export default function ReviewPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Only allow customer to submit reviews
+    if (!isCustomerLoggedIn) {
+      router.visit('/login');
+      return;
+    }
+    
     setData('image_url', `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`);
     post('/review', {
       onSuccess: () => reset(),
@@ -48,49 +68,29 @@ export default function ReviewPage() {
     ));
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center"
-      style={{
-        backgroundImage: "url('https://i.pinimg.com/1200x/9d/49/0c/9d490ce54b6820bc747e9b00c6bb5d76.jpg')",
-      }}
+    <CustomerLayout 
+      currentPage="review"
+      transparentNav={true}
+      fullHeight={true}
+      backgroundImage="https://i.pinimg.com/1200x/9d/49/0c/9d490ce54b6820bc747e9b00c6bb5d76.jpg"
+      title="Reviews"
     >
-      <div className="min-h-screen bg-black/70 font-sans">
-        {/* Navigation */}
-        <nav className="flex items-center p-8 bg-black/50 text-xl justify-between">
-          <a href="/" className="flex items-center gap-3 mr-8">
-            <img src="/images/logo.png" alt="Al-Fateh Steakhouse Logo" className="h-10 w-10 rounded-lg" />
-            <span className="text-2xl font-bold uppercase text-white">Al-Fateh</span>
-          </a>
-          <div className="flex items-center gap-6 text-lg">
-            <a href="/" className="no-underline text-white hover:text-orange-300">Home</a>
-            <a href="/menu" className="no-underline text-white hover:text-orange-300">Menu</a>
-            <a href="/reservation" className="no-underline text-white hover:text-orange-300">Reservation</a>
-            <a href="/review" className="no-underline text-white hover:text-orange-300">Review</a>
-            <a href="/about" className="no-underline text-white hover:text-orange-300">About</a>
-            <button onClick={() => router.visit('/login')} title="Login" className="text-white hover:text-orange-300 ml-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 15l3-3m0 0l-3-3m3 3H9" />
-              </svg>
-            </button>
-          </div>
-        </nav>
+      <main className="max-w-4xl mx-auto px-6 py-10 bg-black/70 rounded-xl border border-yellow-400 shadow-2xl text-white mt-10">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold text-yellow-400">Customer Reviews</h1>
+          <p className="text-gray-300 mt-2">See what our guests are saying about Al-Fateh Steak House.</p>
+        </div>
 
-        {/* Review Section */}
-        <main className="max-w-4xl mx-auto px-6 py-10 bg-black/70 rounded-xl border border-yellow-400 shadow-2xl text-white mt-10">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-extrabold text-yellow-400">Customer Reviews</h1>
-            <p className="text-gray-300 mt-2">See what our guests are saying about Al-Fateh Steakhouse.</p>
-          </div>
+        {/* Elfsight Google Reviews Widget */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-yellow-300 mb-4 text-center">Google Reviews</h2>
+          <div className="elfsight-app-bd736aba-8451-48e9-b16b-8af329482e30" data-elfsight-app-lazy></div>
+        </section>
 
-          {/* Elfsight Google Reviews Widget */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-yellow-300 mb-4 text-center">Google Reviews</h2>
-            <div className="elfsight-app-bd736aba-8451-48e9-b16b-8af329482e30" data-elfsight-app-lazy></div>
-          </section>
-
-          {/* Optional: Local Review Form */}
-          <section className="space-y-5">
+        {/* Review Form - Only show if customer is logged in */}
+        {isCustomerLoggedIn ? (
+          <section className="space-y-5 bg-black/70 rounded-xl border border-yellow-400 shadow-2xl text-white p-6">
             <h2 className="text-2xl font-bold text-yellow-300">Leave a Review</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
               <input
@@ -136,17 +136,28 @@ export default function ReviewPage() {
                 disabled={processing}
                 className="w-full bg-yellow-400 text-black font-bold py-3 rounded uppercase tracking-wide hover:bg-yellow-300 transition duration-300 shadow-lg hover:shadow-yellow-400/50"
               >
-                Enter Review
+                {processing ? 'Submitting...' : 'Submit Review'}
               </button>
             </form>
           </section>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">
-          &copy; 2025 Alfateh Steak House &mdash; Designed by Akatsuci
-        </footer>
-      </div>
-    </div>
+        ) : (
+          <section className="space-y-5 bg-black/70 rounded-xl border border-yellow-400 shadow-2xl text-white p-6 text-center">
+            <h2 className="text-2xl font-bold text-yellow-300">Want to Leave a Review?</h2>
+            <p className="text-gray-300">Please log in to share your experience with us.</p>
+            <button
+              onClick={() => router.visit('/login')}
+              className="bg-yellow-400 text-black font-bold py-3 px-8 rounded uppercase tracking-wide hover:bg-yellow-300 transition duration-300 shadow-lg hover:shadow-yellow-400/50"
+            >
+              Login to Review
+            </button>
+          </section>
+        )}
+      </main>
+      
+      {/* Footer */}
+      <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">
+        &copy; {new Date().getFullYear()} Al-Fateh Steak House &mdash; Designed by Akatsuci
+      </footer>
+    </CustomerLayout>
   );
 }
