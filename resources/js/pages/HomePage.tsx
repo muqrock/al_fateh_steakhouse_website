@@ -1,5 +1,5 @@
 import React from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
 
 interface PageProps {
@@ -10,19 +10,12 @@ interface PageProps {
       role: string;
     };
   };
-  [key: string]: any; // Added index signature
+  [key: string]: any;
 }
 
 export default function HomePage() {
-  const { auth } = usePage<PageProps>().props;
-
-  // Handler for Order Now button
-  const handleOrderNow = () => {
-    if (auth?.user && auth.user.role === 'customer') {
-      router.visit('/reservation');
-    } else {
-      router.visit('/login');
-    }
+  const handleSeeMenu = () => {
+    router.visit('/menu'); // Navigates to the menu page
   };
 
   return (
@@ -46,7 +39,7 @@ export default function HomePage() {
           Serving The Best Western Food For Our Lovely Customer
         </p>
         
-        {/* Order Button */}
+        {/* Menu Button */}
         <button 
           className="
             bg-orange-500 
@@ -71,13 +64,13 @@ export default function HomePage() {
             focus:ring-4
             focus:ring-orange-400
           "
-          onClick={handleOrderNow}
+          onClick={handleSeeMenu}
         >
-          Order Now!
+          See Our Menu!
         </button>
       </div>
       
-      {/* Footer - At bottom */}
+      {/* Footer */}
       <footer className="bg-black/70 text-white text-center py-4 text-sm relative z-10">
         &copy; {new Date().getFullYear()} Al-Fateh Steak House &mdash; Designed by Akatsuci
       </footer>
