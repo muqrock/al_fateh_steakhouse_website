@@ -13,18 +13,18 @@ class ReservationController extends Controller
         return Inertia::render('Reservation');
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'reservation_date' => 'required|date',
-            'reservation_time' => 'required',
-            'guests' => 'required|integer|min:1',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email',
+        'reservation_date' => 'required|date',
+        'reservation_time' => 'required',
+        'guests' => 'required|integer|min:1',
+    ]);
 
-        Reservation::create($validated);
+    Reservation::create($validated);
 
-        return redirect()->back()->with('success', 'Reservation successful!');
-    }
+    return redirect()->back()->with('success', 'Reservation submitted!');
+}
 }
