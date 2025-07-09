@@ -53,7 +53,7 @@ const MenuItem = ({ imageUrl, name, price, onClick }: MenuItemProps & { onClick?
 
 const MenuSection = ({ title, children }: MenuSectionProps) => (
   <section className="mb-12">
-    <h2 className="text-3xl font-bold text-gray-800 border-b-4 border-orange-400 pb-2 mb-6 uppercase tracking-wider">
+    <h2 className="text-3xl font-bold text-orange-900 border-b-4 border-orange-500 pb-2 mb-6 uppercase tracking-wider">
       {title}
     </h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -74,9 +74,9 @@ export default function MenuPage() {
       backgroundImage="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?q=80&w=2940&auto=format&fit=crop"
       title="Menu"
     >
-      <main className="max-w-7xl mx-auto p-8 my-10 bg-amber-300/90 rounded-xl shadow-2xl relative">
+      <main className="max-w-7xl mx-auto p-8 my-10 bg-gradient-to-br from-orange-100 to-amber-100/95 backdrop-blur-sm rounded-xl shadow-2xl relative border border-orange-300/60">
         {Object.entries(menu).length === 0 ? (
-          <p className="text-center text-gray-700 font-semibold">No menu items available.</p>
+          <p className="text-center text-orange-800 font-semibold">No menu items available.</p>
         ) : (
           Object.entries(menu).map(([category, items]) => (
             <MenuSection title={category} key={category}>

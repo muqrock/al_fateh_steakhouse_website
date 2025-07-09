@@ -110,40 +110,40 @@ export default function PaymentHistory() {
       title="Payment History"
     >
       <div className="max-w-4xl mx-auto px-6 py-10 relative z-10">
-        <div className="bg-amber-300/90 rounded-xl shadow-2xl p-8">
+        <div className="bg-gradient-to-br from-sky-100/95 to-indigo-200/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-sky-300/50">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-800">Payment History</h1>
-            <p className="text-gray-700 mt-2">View your order and payment history</p>
+            <h1 className="text-3xl font-extrabold text-indigo-800">Payment History</h1>
+            <p className="text-indigo-700 mt-2">View your order and payment history</p>
           </div>
 
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-lg border border-orange-400">
-              <h3 className="text-sm font-medium text-gray-600">Total Orders</h3>
-              <p className="text-2xl font-bold text-gray-800 mt-2">{orders.data.length}</p>
+            <div className="bg-white/95 p-6 rounded-lg border border-sky-300 shadow-sm">
+              <h3 className="text-sm font-medium text-sky-700">Total Orders</h3>
+              <p className="text-2xl font-bold text-indigo-800 mt-2">{orders.data.length}</p>
             </div>
-            <div className="bg-white p-6 rounded-lg border border-orange-400">
-              <h3 className="text-sm font-medium text-gray-600">Total Spent</h3>
-              <p className="text-2xl font-bold text-green-600 mt-2">RM {totalSpent.toFixed(2)}</p>
+            <div className="bg-white/95 p-6 rounded-lg border border-sky-300 shadow-sm">
+              <h3 className="text-sm font-medium text-sky-700">Total Spent</h3>
+              <p className="text-2xl font-bold text-emerald-600 mt-2">RM {totalSpent.toFixed(2)}</p>
             </div>
-            <div className="bg-white p-6 rounded-lg border border-orange-400">
-              <h3 className="text-sm font-medium text-gray-600">Average Order</h3>
-              <p className="text-2xl font-bold text-blue-600 mt-2">
+            <div className="bg-white/95 p-6 rounded-lg border border-sky-300 shadow-sm">
+              <h3 className="text-sm font-medium text-sky-700">Average Order</h3>
+              <p className="text-2xl font-bold text-violet-600 mt-2">
                 RM {orders.data.length > 0 ? (totalSpent / orders.data.length).toFixed(2) : '0.00'}
               </p>
             </div>
           </div>
 
           {/* Search and Filter Section */}
-          <div className="bg-white rounded-lg border border-orange-400 p-6 shadow-sm mb-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Search & Filter Orders</h3>
+          <div className="bg-white/95 rounded-lg border border-sky-300 p-6 shadow-sm mb-6">
+            <h3 className="text-lg font-bold text-indigo-800 mb-4">Search & Filter Orders</h3>
             
             {/* First row - Search and basic filters */}
             <div className="grid md:grid-cols-3 gap-4 mb-4">
               {/* Search Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Search Orders
                 </label>
                 <input
@@ -151,19 +151,19 @@ export default function PaymentHistory() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by item name, payment method, or status..."
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 />
               </div>
 
               {/* Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Filter by Status
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 >
                   <option value="">All Statuses</option>
                   <option value="completed">Completed</option>
@@ -174,13 +174,13 @@ export default function PaymentHistory() {
 
               {/* Payment Method Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Filter by Payment Method
                 </label>
                 <select
                   value={paymentFilter}
                   onChange={(e) => setPaymentFilter(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 >
                   <option value="">All Payment Methods</option>
                   <option value="cash">Cash</option>
@@ -194,33 +194,33 @@ export default function PaymentHistory() {
             <div className="grid md:grid-cols-4 gap-4 mb-4">
               {/* Date From */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   From Date
                 </label>
                 <input
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 />
               </div>
 
               {/* Date To */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   To Date
                 </label>
                 <input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 />
               </div>
 
               {/* Min Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Min Amount (RM)
                 </label>
                 <input
@@ -229,13 +229,13 @@ export default function PaymentHistory() {
                   value={minAmount}
                   onChange={(e) => setMinAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 />
               </div>
 
               {/* Max Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Max Amount (RM)
                 </label>
                 <input
@@ -244,7 +244,7 @@ export default function PaymentHistory() {
                   value={maxAmount}
                   onChange={(e) => setMaxAmount(e.target.value)}
                   placeholder="1000.00"
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 />
               </div>
             </div>
@@ -253,13 +253,13 @@ export default function PaymentHistory() {
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               {/* Sort By */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Sort By
                 </label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 >
                   <option value="created_at">Order Date</option>
                   <option value="total_amount">Total Amount</option>
@@ -270,13 +270,13 @@ export default function PaymentHistory() {
 
               {/* Sort Order */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-indigo-700 mb-1">
                   Sort Order
                 </label>
                 <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                  className="w-full p-2 border border-sky-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white/90"
                 >
                   <option value="desc">Newest First</option>
                   <option value="asc">Oldest First</option>
@@ -288,13 +288,13 @@ export default function PaymentHistory() {
             <div className="flex gap-3">
               <button
                 onClick={handleFilter}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded font-medium transition-colors duration-200"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-medium transition-colors duration-200 shadow-md"
               >
                 Apply Filters
               </button>
               <button
                 onClick={handleReset}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded font-medium transition-colors duration-200"
+                className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded font-medium transition-colors duration-200 shadow-md"
               >
                 Reset Filters
               </button>
@@ -304,13 +304,13 @@ export default function PaymentHistory() {
           {/* Orders List */}
           {orders.data.length > 0 ? (
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Order History</h2>
+              <h2 className="text-xl font-bold text-indigo-800 mb-4">Order History</h2>
               {orders.data.map((order: Order) => (
-                <div key={order.id} className="bg-white rounded-lg border border-orange-400 p-6 shadow-sm">
+                <div key={order.id} className="bg-white/95 rounded-lg border border-sky-300 p-6 shadow-sm">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="font-semibold text-gray-800">Order #{order.id}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="font-semibold text-indigo-800">Order #{order.id}</h3>
+                      <p className="text-sm text-slate-600">
                         {new Date(order.created_at).toLocaleDateString('en-GB')} at {new Date(order.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                       {order.payment_method && (
@@ -320,7 +320,7 @@ export default function PaymentHistory() {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-800">RM {parseFloat(order.total_amount.toString()).toFixed(2)}</p>
+                      <p className="text-lg font-bold text-slate-800">RM {parseFloat(order.total_amount.toString()).toFixed(2)}</p>
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
@@ -330,14 +330,14 @@ export default function PaymentHistory() {
                   {/* Order Items */}
                   {order.items && order.items.length > 0 && (
                     <div className="border-t border-gray-200 pt-4">
-                      <h4 className="font-medium text-gray-800 mb-2">Items:</h4>
+                      <h4 className="font-medium text-indigo-700 mb-2">Items:</h4>
                       <div className="space-y-2">
                         {order.items.map((item: any, index: number) => (
                           <div key={index} className="flex justify-between items-center text-sm">
-                            <span className="text-gray-700">
+                            <span className="text-sky-700">
                               {item.quantity}x {item.name}
                             </span>
-                            <span className="text-gray-600">RM {parseFloat(item.price).toFixed(2)}</span>
+                            <span className="text-sky-600">RM {parseFloat(item.price).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
@@ -347,8 +347,8 @@ export default function PaymentHistory() {
                   {/* Order Notes */}
                   {order.notes && (
                     <div className="border-t border-gray-200 pt-4 mt-4">
-                      <h4 className="font-medium text-gray-800 mb-2">Notes:</h4>
-                      <p className="text-sm text-gray-700 italic">{order.notes}</p>
+                      <h4 className="font-medium text-indigo-700 mb-2">Notes:</h4>
+                      <p className="text-sm text-sky-700 italic">{order.notes}</p>
                     </div>
                   )}
                 </div>
@@ -374,8 +374,8 @@ export default function PaymentHistory() {
                         onClick={() => router.visit(link.url)}
                         className={`px-3 py-2 rounded border transition-colors duration-200 ${
                           link.active
-                            ? 'bg-orange-500 text-white border-orange-500'
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white/95 text-indigo-700 border-sky-300 hover:bg-sky-50'
                         }`}
                         dangerouslySetInnerHTML={{ __html: link.label }}
                       />
@@ -391,10 +391,10 @@ export default function PaymentHistory() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-800 mb-2">
+              <h3 className="text-lg font-medium text-indigo-800 mb-2">
                 {searchTerm || sortBy !== 'created_at' ? 'No Orders Found' : 'No Orders Yet'}
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-sky-700 mb-4">
                 {searchTerm || sortBy !== 'created_at' 
                   ? 'Try adjusting your search or filter criteria.' 
                   : 'You haven\'t placed any orders yet. Start exploring our menu!'}

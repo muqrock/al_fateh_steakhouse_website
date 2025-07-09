@@ -31,7 +31,7 @@ interface FormFieldProps {
 
 const FormField: React.FC<FormFieldProps> = ({ id, label, children }) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+    <label htmlFor={id} className="block text-sm font-bold text-orange-800 mb-2">
       {label}
     </label>
     <div className="relative rounded-md shadow-sm">{children}</div>
@@ -90,9 +90,9 @@ export default function Reservation() {
     >
       <div className="flex-1 flex flex-col min-h-screen">
         <div className="flex flex-1 justify-center items-center p-4">
-          <div className="bg-white/95 dark:bg-gray-900/95 p-8 rounded-xl shadow-2xl w-full max-w-3xl border-4 border-orange-500">
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-3xl border border-orange-200/70">
 
-            <h2 className="text-3xl font-bold text-orange-700 dark:text-orange-400 mb-6 underline text-center drop-shadow">
+            <h2 className="text-3xl font-bold text-orange-900 mb-6 underline text-center drop-shadow">
               Table Reservation
             </h2>
 
@@ -114,7 +114,7 @@ export default function Reservation() {
                     type="text"
                     value={data.name}
                     disabled
-                    className="block w-full rounded-md border-gray-300 bg-gray-100 pl-10 py-3 text-gray-500"
+                    className="block w-full rounded-md border-orange-200 bg-orange-100/70 pl-10 py-3 text-orange-700"
                   />
                 </FormField>
 
@@ -127,7 +127,7 @@ export default function Reservation() {
                     type="email"
                     value={data.email}
                     disabled
-                    className="block w-full rounded-md border-gray-300 bg-gray-100 pl-10 py-3 text-gray-500"
+                    className="block w-full rounded-md border-orange-200 bg-orange-100/70 pl-10 py-3 text-orange-700"
                   />
                 </FormField>
               </div>
@@ -143,7 +143,7 @@ export default function Reservation() {
                     value={data.phone}
                     onChange={(e) => setData('phone', e.target.value)}
                     required
-                    className="block w-full rounded-md border-gray-300 pl-10 py-3"
+                    className="block w-full rounded-md border-orange-200 bg-white/90 text-orange-800 pl-10 py-3 focus:border-orange-400 focus:ring-orange-400"
                   />
                   {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                 </FormField>
@@ -157,7 +157,7 @@ export default function Reservation() {
                     value={data.guests}
                     onChange={(e) => setData('guests', parseInt(e.target.value))}
                     required
-                    className="block w-full rounded-md border-gray-300 pl-10 py-3"
+                    className="block w-full rounded-md border-orange-200 bg-white/90 text-orange-800 pl-10 py-3 focus:border-orange-400 focus:ring-orange-400"
                   >
                     {[1, 2, 3, 4, 5, 6].map((num) => (
                       <option key={num} value={num}>
@@ -180,7 +180,7 @@ export default function Reservation() {
                     value={data.reservation_date}
                     onChange={(e) => setData('reservation_date', e.target.value)}
                     required
-                    className="block w-full rounded-md border-gray-300 pl-10 py-3"
+                    className="block w-full rounded-md border-orange-200 bg-white/90 text-orange-800 pl-10 py-3 focus:border-orange-400 focus:ring-orange-400"
                   />
                   {errors.reservation_date && <p className="text-red-500 text-sm mt-1">{errors.reservation_date}</p>}
                 </FormField>
@@ -195,7 +195,7 @@ export default function Reservation() {
                     value={data.reservation_time}
                     onChange={(e) => setData('reservation_time', e.target.value)}
                     required
-                    className="block w-full rounded-md border-gray-300 pl-10 py-3"
+                    className="block w-full rounded-md border-orange-200 bg-white/90 text-orange-800 pl-10 py-3 focus:border-orange-400 focus:ring-orange-400"
                   />
                   {errors.reservation_time && <p className="text-red-500 text-sm mt-1">{errors.reservation_time}</p>}
                 </FormField>
@@ -212,13 +212,13 @@ export default function Reservation() {
 
             {/* ✅ Reservation Info Table (after the form) */}
             {userReservation && (
-              <div className="mt-10 p-6 bg-orange-50 dark:bg-orange-900 rounded-lg border-2 border-orange-400 shadow-md">
-                <h3 className="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-4 text-center">
+              <div className="mt-10 p-6 bg-gradient-to-r from-orange-100 to-amber-100/90 rounded-lg border border-orange-300/70 shadow-md">
+                <h3 className="text-xl font-semibold text-orange-900 mb-4 text-center">
                   📋 Your Latest Reservation
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-orange-300 dark:divide-orange-600">
-                    <thead className="bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100">
+                  <table className="min-w-full divide-y divide-orange-300">
+                    <thead className="bg-orange-200 text-orange-900">
                       <tr>
                         <th className="px-4 py-2 text-left text-sm font-semibold">Date</th>
                         <th className="px-4 py-2 text-left text-sm font-semibold">Time</th>
@@ -226,8 +226,8 @@ export default function Reservation() {
                         <th className="px-4 py-2 text-left text-sm font-semibold">Phone</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100">
-                      <tr className="hover:bg-orange-100 dark:hover:bg-orange-700">
+                    <tbody className="bg-white/90 text-orange-800">
+                      <tr className="hover:bg-orange-50">
                         <td className="px-4 py-3">
                           {new Date(userReservation.reservation_date).toLocaleDateString()}
                         </td>
