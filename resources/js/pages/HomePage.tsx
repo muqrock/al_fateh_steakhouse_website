@@ -33,8 +33,8 @@ export default function HomePage() {
       backgroundImage="https://images.unsplash.com/photo-1554998171-89445e31c52b?q=80&w=2940&auto=format&fit=crop"
       title="Home"
     >
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center p-5">
+      {/* Main Content - Centered */}
+      <div className="flex-1 flex flex-col justify-center items-center text-center p-5 relative z-10">
         {/* Restaurant Name */}
         <div className="mb-5">
           <h1 className="text-6xl md:text-7xl font-bold m-0 leading-none">Al-Fateh</h1>
@@ -77,8 +77,8 @@ export default function HomePage() {
         </button>
       </div>
       
-      {/* Footer */}
-      <footer className="bg-black/70 text-white text-center py-4 mt-auto text-sm">
+      {/* Footer - At bottom */}
+      <footer className="bg-black/70 text-white text-center py-4 text-sm relative z-10">
         &copy; {new Date().getFullYear()} Al-Fateh Steak House &mdash; Designed by Akatsuci
       </footer>
     </CustomerLayout>

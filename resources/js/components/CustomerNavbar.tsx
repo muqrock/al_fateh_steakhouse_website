@@ -40,11 +40,11 @@ const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ transparent = false, cu
   };
 
   const navStyle = transparent 
-    ? 'bg-black/50' 
+    ? 'bg-black/30 absolute top-0 left-0 right-0 z-50' 
     : 'bg-white shadow-md border-b border-gray-200';
   
   const textStyle = transparent 
-    ? 'text-white' 
+    ? 'text-white drop-shadow-lg' 
     : 'text-gray-800';
   
   const hoverStyle = transparent 
@@ -63,7 +63,9 @@ const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ transparent = false, cu
   };
 
   return (
-    <nav className={`flex items-center p-6 text-xl justify-between ${navStyle}`}>
+    <nav 
+      className={`flex items-center p-6 text-xl justify-between ${navStyle}`}
+    >
       {/* Logo and Brand */}
       <a href="/" className="flex items-center gap-3 mr-8">
         <img 
