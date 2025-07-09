@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Reservation;
@@ -96,7 +97,7 @@ class AdminController extends Controller
                     'date' => $reservation->reservation_date,
                     'time' => $reservation->reservation_time,
                     'guests' => $reservation->guests,
-                    'created_at' => $reservation->created_at->format('M d, Y H:i')
+                    'created_at' => $reservation->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i')
                 ];
             });
 
@@ -109,7 +110,7 @@ class AdminController extends Controller
                     'user_name' => $review->user ? $review->user->name : ($review->name ?? 'Anonymous'),
                     'rating' => $review->rating ?? 'N/A',
                     'comment' => substr($review->comment ?? '', 0, 100) . (strlen($review->comment ?? '') > 100 ? '...' : ''),
-                    'created_at' => $review->created_at->format('M d, Y H:i')
+                    'created_at' => $review->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i')
                 ];
             });
 
@@ -195,10 +196,68 @@ public function reservations()
      */
     public function reviews()
     {
-        $reviews = Review::with('user')->latest()->paginate(10);
+        $reviews = Review::with(['user', 'admin'])
+            ->latest()
+            ->paginate(10)
+            ->through(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'user_name' => $review->name, // The name field in the review
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'created_at' => $review->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i:s'),
+                    'admin_reply' => $review->admin_reply,
+                    'admin_replied_at' => $review->admin_replied_at ? $review->admin_replied_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i:s') : null,
+                    'user' => $review->user ? [
+                        'id' => $review->user->id,
+                        'name' => $review->user->name,
+                        'email' => $review->user->email,
+                    ] : null,
+                    'admin' => $review->admin ? [
+                        'id' => $review->admin->id,
+                        'name' => $review->admin->name,
+                    ] : null,
+                ];
+            });
+            
         return Inertia::render('Admin/Reviews', [
             'reviews' => $reviews
         ]);
+    }
+
+    /**
+     * Reply to a customer review
+     *
+     * @param Request $request
+     * @param Review $review
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function replyToReview(Request $request, Review $review)
+    {
+        $request->validate([
+            'admin_reply' => 'required|string|max:1000',
+        ]);
+
+        $review->update([
+            'admin_reply' => $request->admin_reply,
+            'admin_id' => Auth::id(),
+            'admin_replied_at' => now(),
+        ]);
+
+        return back()->with('success', 'Reply added successfully');
+    }
+
+    /**
+     * Delete a customer review
+     *
+     * @param Review $review
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteReview(Review $review)
+    {
+        $review->delete();
+
+        return back()->with('success', 'Review deleted successfully');
     }
 
     /**

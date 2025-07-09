@@ -9,6 +9,12 @@ type Review = {
   comment: string;
   rating: number;
   image_url: string;
+  admin_reply?: string;
+  admin?: {
+    name: string;
+  };
+  admin_replied_at?: string;
+  created_at: string;
 };
 
 interface AuthUser {
@@ -29,7 +35,6 @@ export default function ReviewPage() {
   const { reviews, auth } = usePage<PageProps>().props;
   const [filterRating, setFilterRating] = useState(0);
   const { data, setData, post, processing, reset, errors } = useForm({
-    name: '',
     comment: '',
     rating: 0,
     image_url: '',
@@ -37,6 +42,15 @@ export default function ReviewPage() {
 
   // Check if user is logged in as customer
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
+
+  // Custom date formatter to match backend d-m-y format
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -88,19 +102,91 @@ export default function ReviewPage() {
           <div className="elfsight-app-bd736aba-8451-48e9-b16b-8af329482e30" data-elfsight-app-lazy></div>
         </section>
 
+        {/* Customer Reviews from Database */}
+        {reviews && reviews.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-yellow-300 mb-6 text-center">Customer Reviews</h2>
+            <div className="space-y-6">
+              {reviews
+                .filter(review => filterRating === 0 || review.rating === filterRating)
+                .map((review) => (
+                <div key={review.id} className="bg-black/80 rounded-xl border border-yellow-400/30 p-6">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={review.image_url || `https://i.pravatar.cc/150?img=${review.id}`}
+                      alt={`${review.name}'s avatar`}
+                      className="w-12 h-12 rounded-full border-2 border-yellow-400"
+                    />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-bold text-yellow-400">{review.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <div className="flex">{renderStars(review.rating)}</div>
+                            <span className="text-gray-400 text-sm">({review.rating}/5)</span>
+                          </div>
+                        </div>
+                        <span className="text-gray-400 text-sm">
+                          {formatDate(review.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 mb-3 italic">"{review.comment}"</p>
+                      
+                      {/* Admin Reply */}
+                      {review.admin_reply && (
+                        <div className="bg-yellow-400/10 border-l-4 border-yellow-400 p-4 mt-3 rounded-r-lg">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-yellow-400 font-semibold text-sm">
+                              Reply by {review.admin?.name || 'Al-Fateh Steak House'}
+                            </span>
+                            {review.admin_replied_at && (
+                              <span className="text-gray-400 text-xs">
+                                {new Date(review.admin_replied_at).toLocaleDateString('en-GB')}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-200 text-sm">{review.admin_reply}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Rating Filter */}
+            <div className="flex justify-center mt-6">
+              <div className="flex items-center gap-2 bg-black/80 rounded-lg p-3 border border-yellow-400/30">
+                <span className="text-white text-sm">Filter by rating:</span>
+                <button
+                  onClick={() => setFilterRating(0)}
+                  className={`px-3 py-1 rounded text-sm ${filterRating === 0 ? 'bg-yellow-400 text-black' : 'bg-gray-700 text-white'}`}
+                >
+                  All
+                </button>
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => setFilterRating(rating)}
+                    className={`px-2 py-1 rounded text-sm ${filterRating === rating ? 'bg-yellow-400 text-black' : 'bg-gray-700 text-white'}`}
+                  >
+                    {rating}★
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Review Form - Only show if customer is logged in */}
         {isCustomerLoggedIn ? (
           <section className="space-y-5 bg-black/70 rounded-xl border border-yellow-400 shadow-2xl text-white p-6">
             <h2 className="text-2xl font-bold text-yellow-300">Leave a Review</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
-              <input
-                type="text"
-                placeholder="Your name"
-                value={data.name}
-                onChange={e => setData('name', e.target.value)}
-                className="w-full p-3 bg-black text-white border border-yellow-400 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-              />
+              <div className="bg-black/50 p-3 rounded border border-yellow-400/50">
+                <label className="text-sm text-yellow-300">Reviewing as:</label>
+                <p className="text-white font-medium">{auth.user?.name}</p>
+              </div>
               <div>
                 <label className="text-lg font-medium text-white">Your Rating:</label>
                 <div className="flex gap-2 mt-1 cursor-pointer">
