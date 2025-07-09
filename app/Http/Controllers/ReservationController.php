@@ -5,13 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
-    public function index()
-    {
-        return Inertia::render('Reservation');
-    }
+public function index()
+{
+    $user = Auth::user();
+
+    // Get the latest reservation made by this user (adjust if needed)
+    $reservation = Reservation::where('email', $user->email)->latest()->first();
+
+    return Inertia::render('Reservation', [
+        'auth' => [
+            'user' => $user,
+            'reservation' => $reservation,
+        ]
+    ]);
+}
 
 public function store(Request $request)
 {
