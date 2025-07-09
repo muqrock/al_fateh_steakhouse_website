@@ -219,7 +219,6 @@ public function updateReservation(Request $request, $id)
         'reservation_date' => 'required|date',
         'reservation_time' => 'required|date_format:H:i',
         'guests' => 'required|integer|min:1',
-        'special_request' => 'nullable|string',
     ]);
 
     // 3. Update the reservation with validated data

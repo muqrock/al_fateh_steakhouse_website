@@ -12,8 +12,8 @@ interface Reservation {
   guests: number;
   created_at: string;
   status?: string;
-  special_request?: string;
-  [key: string]: any; // Add this index signature
+  // special_request field removed
+  [key: string]: any; 
 }
 
 interface PageProps {
@@ -27,8 +27,6 @@ const AdminReservations: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const deleteReservation = (id: number) => {
-    // Using a custom modal for confirmation is better than `confirm()`
-    // but for now, we'll keep the logic.
     if (window.confirm('Are you sure you want to delete this reservation?')) {
       router.delete(`/admin/reservations/${id}`);
     }
@@ -44,7 +42,7 @@ const AdminReservations: React.FC = () => {
     setEditingReservation(null);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!editingReservation) return;
     
     const { name, value } = e.target;
@@ -54,26 +52,25 @@ const AdminReservations: React.FC = () => {
     });
   };
 
-const submitEdit = () => {
-  if (!editingReservation) return;
-  
-  // Create a plain object with only the fields we want to send
-  const payload = {
-    name: editingReservation.name,
-    email: editingReservation.email,
-    phone: editingReservation.phone,
-    reservation_date: editingReservation.reservation_date,
-    reservation_time: editingReservation.reservation_time,
-    guests: editingReservation.guests,
-    special_request: editingReservation.special_request || null,
+  const submitEdit = () => {
+    if (!editingReservation) return;
+    
+    // Payload no longer includes special_request
+    const payload = {
+        name: editingReservation.name,
+        email: editingReservation.email,
+        phone: editingReservation.phone,
+        reservation_date: editingReservation.reservation_date,
+        reservation_time: editingReservation.reservation_time,
+        guests: editingReservation.guests,
+    };
+
+    router.put(`/admin/reservations/${editingReservation.id}`, payload, {
+      onSuccess: () => {
+        closeModal();
+      }
+    });
   };
-  
-  router.put(`/admin/reservations/${editingReservation.id}`, payload, {
-    onSuccess: () => {
-      closeModal();
-    }
-  });
-};
 
   const today = new Date().toISOString().split('T')[0];
   const now = new Date();
@@ -214,16 +211,7 @@ const submitEdit = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Special Request</label>
-                <textarea
-                  name="special_request"
-                  value={editingReservation.special_request || ''}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded text-gray-900 focus:ring-blue-500 focus:border-blue-500"
-                  rows={3}
-                />
-              </div>
+              {/* Special Request Textarea has been removed */}
 
               <div className="flex justify-end space-x-3 pt-4">
                 <button
