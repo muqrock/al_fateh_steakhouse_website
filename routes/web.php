@@ -86,6 +86,9 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/reviews/{review}/reply', [\App\Http\Controllers\AdminController::class, 'replyToReview'])->name('admin.reviews.reply');
     Route::delete('/admin/reviews/{review}', [\App\Http\Controllers\AdminController::class, 'deleteReview'])->name('admin.reviews.delete');
     
+    Route::put('/admin/reservations/{id}', [\App\Http\Controllers\AdminController::class, 'updateReservation'])->name('admin.reservations.update');
+    Route::delete('/admin/reservations/{id}', [\App\Http\Controllers\AdminController::class, 'deleteReservation'])->name('admin.reservations.delete');
+
     // ==================== MENU ROUTES ADDITION ====================
     Route::get('/admin/menu', [MenuController::class, 'index'])->name('admin.menu.index');
     Route::get('/admin/menu/create', [MenuController::class, 'create'])->name('admin.menu.create');

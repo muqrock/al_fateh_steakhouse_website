@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Reservation extends Model
 {
     protected $fillable = [
-    'name',
-    'email',
-    'reservation_date',
-    'reservation_time',
-    'guests',
-];
+        'name',
+        'email',
+        'phone', // ✅ Make sure this is included
+        'reservation_date',
+        'reservation_time',
+        'guests',
+    ];
+
 
 }

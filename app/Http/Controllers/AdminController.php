@@ -187,6 +187,24 @@ public function reservations()
 
 }
 
+/**
+ * Delete a reservation.
+ *
+ * @param int $id
+ * @return \Illuminate\Http\RedirectResponse
+ */
+public function deleteReservation($id)
+{
+    $reservation = Reservation::find($id);
+
+    if (!$reservation) {
+        return redirect()->back()->with('error', 'Reservation not found.');
+    }
+
+    $reservation->delete();
+
+    return redirect()->back()->with('success', 'Reservation deleted successfully.');
+}
 
 
     /**
