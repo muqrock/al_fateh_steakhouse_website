@@ -177,13 +177,16 @@ class AdminController extends Controller
      *
      * @return \Inertia\Response
      */
-    public function reservations()
-    {
-        $reservations = Reservation::with('user')->latest()->paginate(10);
-        return Inertia::render('Admin/Reservations', [
-            'reservations' => $reservations
-        ]);
-    }
+public function reservations()
+{
+    $reservations = Reservation::all();
+   return Inertia::render('Admin/AdminReservations', [
+    'reservations' => $reservations,
+]);
+
+}
+
+
 
     /**
      * Show reviews management page.

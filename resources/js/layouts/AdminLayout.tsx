@@ -11,6 +11,8 @@ const sidebarLinks = [
   { name: 'Menu List', path: '/admin/menu', icon: '🍽️' },
   { name: 'Customer List', path: '/admin/customers', icon: '👥' },
   { name: 'Review List', path: '/admin/reviews', icon: '📝' },
+  { name: 'Reservation List', path: '/admin/reservations', icon: '📅' },
+
 ];
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
