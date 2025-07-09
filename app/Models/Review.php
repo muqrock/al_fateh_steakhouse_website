@@ -11,6 +11,11 @@ class Review extends Model
 
     protected $fillable = [
         'user_id', 'menu_item_id', 'name', 'comment', 'rating', 'image_url',
+        'admin_reply', 'admin_id', 'admin_replied_at',
+    ];
+
+    protected $casts = [
+        'admin_replied_at' => 'datetime',
     ];
 
     /**
@@ -19,6 +24,14 @@ class Review extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the admin who replied to this review
+     */
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     /**
