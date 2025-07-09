@@ -22,9 +22,24 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors">
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1554998171-89445e31c52b?q=80&w=2940&auto=format&fit=crop)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}
+    >
       <Head title="Al-Fateh Steak House | Admin Login" />
-      <form className="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-sm" onSubmit={handleSubmit}>
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-black/70 z-0" />
+      <form className="relative z-10 bg-white/95 dark:bg-gray-900/90 p-8 rounded-xl shadow-2xl w-full max-w-sm" onSubmit={handleSubmit}>
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Admin Login</h2>
         <div className="mb-4">
           <label className="block text-gray-700 dark:text-gray-300 mb-2">Admin Password</label>
