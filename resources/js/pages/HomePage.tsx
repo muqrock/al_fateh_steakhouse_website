@@ -23,7 +23,7 @@ export default function HomePage() {
       currentPage="home" 
       transparentNav={true} 
       fullHeight={true}
-      backgroundImage="https://images.unsplash.com/photo-1554998171-89445e31c52b?q=80&w=2940&auto=format&fit=crop"
+      backgroundImage="/images/steak.jpg"
       title="Home"
     >
       {/* Main Content - Centered */}

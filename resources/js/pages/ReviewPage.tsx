@@ -77,6 +77,7 @@ export default function ReviewPage() {
       currentPage="review"
       transparentNav={true}
       fullHeight={true}
+      backgroundImage="/images/steak.jpg"
       title="Reviews"
     >
       <main className="max-w-4xl mx-auto px-6 py-10 bg-amber-300/90 rounded-xl shadow-2xl my-10 relative z-10">

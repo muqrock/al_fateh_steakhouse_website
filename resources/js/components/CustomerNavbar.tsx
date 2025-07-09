@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 
 interface AuthUser {
@@ -21,9 +21,25 @@ interface CustomerNavbarProps {
 
 const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ transparent = false, currentPage }) => {
   const { auth } = usePage<PageProps>().props;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Only show customer users (not admins) in the navbar
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = () => {
     router.post('/logout', {}, {
@@ -115,27 +131,69 @@ const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ transparent = false, cu
         
         {/* Auth Section */}
         {isCustomerLoggedIn ? (
-          <div className="flex items-center ml-6">
-            <span className={`font-semibold ${textStyle}`}>
-              Welcome, {auth.user!.name}
-            </span>
-            <button 
-              onClick={handleLogout} 
-              title="Logout" 
-              className={`transition-colors duration-300 ml-4 ${textStyle} ${hoverStyle} bg-transparent border-none cursor-pointer`}
+          <div className="relative ml-6" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className={`flex items-center gap-2 transition-colors duration-300 ${textStyle} ${hoverStyle} bg-transparent border-none cursor-pointer`}
             >
+              {/* Profile Icon */}
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
+                {auth.user!.name.charAt(0).toUpperCase()}
+              </div>
+              <span className="font-semibold">{auth.user!.name}</span>
+              {/* Dropdown Arrow */}
               <svg 
-                xmlns="http://www.w3.org/2000/svg" 
+                className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
                 fill="none" 
-                viewBox="0 0 24 24" 
-                strokeWidth={1.5} 
                 stroke="currentColor" 
-                className="w-6 h-6"
+                viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l3-3m0 0l-3-3m3 3H9" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <button
+                  onClick={() => {
+                    router.visit('/profile');
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Profile
+                </button>
+                <button
+                  onClick={() => {
+                    router.visit('/payment-history');
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Payment History
+                </button>
+                <hr className="my-1 border-gray-200" />
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <button 

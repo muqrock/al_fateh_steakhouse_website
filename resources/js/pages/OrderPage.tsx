@@ -32,6 +32,9 @@ export default function OrderPage() {
   const { menu, auth } = usePage<PageProps>().props;
   const [cart, setCart] = useState<CartItem[]>([]);
   const [confirming, setConfirming] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [orderId, setOrderId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -80,6 +83,46 @@ export default function OrderPage() {
   };
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handlePayment = async () => {
+    if (!paymentMethod) {
+      alert('Please select a payment method');
+      return;
+    }
+
+    try {
+      const response = await fetch('/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        body: JSON.stringify({
+          items: cart,
+          total_amount: total,
+          payment_method: paymentMethod,
+          notes: ''
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOrderId(data.order_id);
+        setPaymentSuccess(true);
+        
+        // Redirect to menu page after 5 seconds
+        setTimeout(() => {
+          router.visit('/menu');
+        }, 5000);
+      } else {
+        alert('Order failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+    }
+  };
 
   const getCartGrouped = () => {
     const grouped: { [category: string]: CartItem[] } = {};
@@ -313,8 +356,50 @@ export default function OrderPage() {
               </div>
             )}
           </>
+        ) : paymentSuccess ? (
+          // Payment Success Screen
+          <div className="bg-black/80 backdrop-blur-sm rounded-lg border border-green-400 p-8 shadow-xl max-w-4xl mx-auto text-white text-center">
+            <div className="mb-6">
+              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-green-400 mb-2">Payment Successful!</h2>
+              <p className="text-gray-300 mb-4">Thank you for your order at Al-Fateh Steak House</p>
+            </div>
+
+            <div className="bg-black/50 rounded-lg p-6 mb-6 border border-gray-600">
+              <h3 className="text-lg font-bold text-yellow-400 mb-4">Order Receipt</h3>
+              <div className="text-left space-y-2">
+                <p><span className="text-gray-300">Order ID:</span> <span className="text-white font-mono">#{orderId}</span></p>
+                <p><span className="text-gray-300">Payment Method:</span> <span className="text-white capitalize">{paymentMethod.replace('_', ' ')}</span></p>
+                <p><span className="text-gray-300">Date:</span> <span className="text-white">{new Date().toLocaleDateString('en-GB')}</span></p>
+                <div className="border-t border-gray-600 pt-2 mt-4">
+                  {cart.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-sm">
+                      <span className="text-gray-300">{item.name} x{item.quantity}</span>
+                      <span className="text-white">RM {(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                  <div className="border-t border-gray-600 pt-2 mt-2 flex justify-between font-bold">
+                    <span className="text-yellow-400">Total:</span>
+                    <span className="text-yellow-400">RM {total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-gray-300">
+              <p className="mb-2">Your order has been confirmed and will be prepared shortly.</p>
+              <p className="text-sm">Redirecting to menu page in 5 seconds...</p>
+            </div>
+          </div>
         ) : (
+          // Order Confirmation Screen
           <div className="bg-black/80 backdrop-blur-sm rounded-lg border border-yellow-400 p-8 shadow-xl max-w-4xl mx-auto text-white">
+            <h3 className="text-xl font-bold text-yellow-400 mb-4">Review Your Order</h3>
+            
             {cart.map((item, idx) => (
               <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-600">
                 <div>
@@ -330,7 +415,6 @@ export default function OrderPage() {
                   />
                 </div>
                 <p className="font-bold text-yellow-400">RM {Number(item.price * item.quantity).toFixed(2)}</p>
-
               </div>
             ))}
 
@@ -338,18 +422,77 @@ export default function OrderPage() {
               Total: RM {total.toFixed(2)}
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="mt-6 border-t border-gray-600 pt-6">
+              <h4 className="text-lg font-bold text-white mb-4">Select Payment Method</h4>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    paymentMethod === 'cash' 
+                      ? 'border-yellow-400 bg-yellow-400/10' 
+                      : 'border-gray-600 hover:border-yellow-400/50'
+                  }`}
+                  onClick={() => setPaymentMethod('cash')}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">💵</div>
+                    <p className="font-semibold">Cash</p>
+                    <p className="text-sm text-gray-300">Pay on delivery</p>
+                  </div>
+                </div>
+
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    paymentMethod === 'online_banking' 
+                      ? 'border-yellow-400 bg-yellow-400/10' 
+                      : 'border-gray-600 hover:border-yellow-400/50'
+                  }`}
+                  onClick={() => setPaymentMethod('online_banking')}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">🏦</div>
+                    <p className="font-semibold">Online Banking</p>
+                    <p className="text-sm text-gray-300">Bank transfer</p>
+                  </div>
+                </div>
+
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    paymentMethod === 'ewallet' 
+                      ? 'border-yellow-400 bg-yellow-400/10' 
+                      : 'border-gray-600 hover:border-yellow-400/50'
+                  }`}
+                  onClick={() => setPaymentMethod('ewallet')}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📱</div>
+                    <p className="font-semibold">E-Wallet</p>
+                    <p className="text-sm text-gray-300">GrabPay, TouchnGo</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-8 flex justify-between gap-6">
               <button
                 className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-8 rounded transition-colors duration-300 font-semibold"
-                onClick={() => setConfirming(false)}
+                onClick={() => {
+                  setConfirming(false);
+                  setPaymentMethod('');
+                }}
               >
                 Back
               </button>
               <button
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded transition-colors duration-300"
-                onClick={() => alert('Proceed to payment...')}
+                className={`py-3 px-8 rounded transition-colors duration-300 font-bold ${
+                  paymentMethod 
+                    ? 'bg-yellow-500 hover:bg-yellow-600 text-black' 
+                    : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                }`}
+                onClick={handlePayment}
+                disabled={!paymentMethod}
               >
-                Proceed to Pay
+                {paymentMethod ? 'Proceed to Pay' : 'Select Payment Method'}
               </button>
             </div>
           </div>

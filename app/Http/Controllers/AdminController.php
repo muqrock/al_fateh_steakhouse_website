@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Reservation;
 use App\Models\Review;
 use App\Models\MenuItem;
+use App\Models\Order;
 
 class AdminController extends Controller
 {
@@ -287,6 +288,27 @@ public function updateReservation(Request $request, $id)
     }
 
     /**
+     * Update an admin reply to a review
+     *
+     * @param Request $request
+     * @param Review $review
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateReplyToReview(Request $request, Review $review)
+    {
+        $request->validate([
+            'admin_reply' => 'required|string|max:1000',
+        ]);
+
+        $review->update([
+            'admin_reply' => $request->admin_reply,
+            'admin_replied_at' => now(),
+        ]);
+
+        return back()->with('success', 'Reply updated successfully');
+    }
+
+    /**
      * Delete a customer review
      *
      * @param Review $review
@@ -304,14 +326,74 @@ public function updateReservation(Request $request, $id)
      *
      * @return \Inertia\Response
      */
-    public function customers()
+    public function customers(Request $request)
     {
-        $customers = User::where('role', 'customer')
-            ->latest()
-            ->paginate(20);
+        $query = User::where('role', 'customer')
+            ->withSum('orders', 'total_amount')
+            ->withCount('orders')
+            ->withCount('reviews');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->get('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->get('date_to'));
+        }
+
+        // Filter by spending range
+        if ($request->filled('min_spend')) {
+            $query->having('orders_sum_total_amount', '>=', $request->get('min_spend'));
+        }
+
+        if ($request->filled('max_spend')) {
+            $query->having('orders_sum_total_amount', '<=', $request->get('max_spend'));
+        }
+
+        // Sort options
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        if ($sortBy === 'total_spend') {
+            $query->orderBy('orders_sum_total_amount', $sortOrder);
+        } elseif ($sortBy === 'total_orders') {
+            $query->orderBy('orders_count', $sortOrder);
+        } elseif ($sortBy === 'name') {
+            $query->orderBy('name', $sortOrder);
+        } else {
+            $query->orderBy('created_at', $sortOrder);
+        }
+
+        $customers = $query->paginate(20)->withQueryString();
+        
+        // Format the data for display
+        $customers->getCollection()->transform(function ($customer) {
+            return [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'role' => $customer->role,
+                'created_at' => $customer->created_at,
+                'joined_date' => $customer->created_at->setTimezone(config('app.timezone'))->format('d-m-Y'),
+                'total_spend' => (float) ($customer->orders_sum_total_amount ?? 0),
+                'total_orders' => (int) ($customer->orders_count ?? 0),
+                'total_reviews' => (int) ($customer->reviews_count ?? 0),
+            ];
+        });
         
         return Inertia::render('Admin/Customers', [
-            'customers' => $customers
+            'customers' => $customers,
+            'filters' => $request->only(['search', 'date_from', 'date_to', 'min_spend', 'max_spend', 'sort_by', 'sort_order'])
         ]);
     }
 }

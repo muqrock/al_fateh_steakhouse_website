@@ -24,7 +24,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({
   const containerStyle = fullHeight 
     ? { 
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom right, #d2b48c, #deb887, #cd853f)',
+        backgroundImage: backgroundImage ? `url("${backgroundImage}")` : 'url("/images/steak.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -32,7 +32,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({
       }
     : { 
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom right, #d2b48c, #deb887, #cd853f)',
+        backgroundImage: backgroundImage ? `url("${backgroundImage}")` : 'url("/images/steak.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -51,8 +51,11 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({
     <div style={containerStyle} className={overlayClass}>
       <Head title={`Al-Fateh Steak House | ${pageTitle}`} />
       
-      {/* Subtle Line Pattern Background for all customer pages */}
-      <div className="absolute inset-0 opacity-10">
+      {/* Dark overlay for better text readability - covers full scrollable area */}
+      <div className="fixed inset-0 bg-black/40 z-0"></div>
+      
+      {/* Subtle Line Pattern Background for all customer pages - covers full scrollable area */}
+      <div className="fixed inset-0 opacity-10 -z-10">
         <svg width="100%" height="100%" className="absolute inset-0">
           <defs>
             <pattern id="lines" patternUnits="userSpaceOnUse" width="40" height="40">
@@ -64,7 +67,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({
       </div>
       
       <CustomerNavbar transparent={transparentNav} currentPage={currentPage} />
-      <main style={contentStyle} className={transparentNav ? "relative flex-1" : "flex-1"}>
+      <main style={contentStyle} className={transparentNav ? "relative flex-1 z-10" : "flex-1 z-10"}>
         <div className={transparentNav ? "pt-24 flex-1 flex flex-col" : "flex-1 flex flex-col"}>
           {children}
         </div>

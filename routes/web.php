@@ -64,9 +64,15 @@ Route::middleware(['customer'])->group(function () {
         ]);
     })->name('order');
 
+    // Profile routes
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/payment-history', [\App\Http\Controllers\ProfileController::class, 'paymentHistory'])->name('payment-history');
+
     // Customer-only actions
     Route::post('/review', [ReviewController::class, 'store']);
     Route::post('/reservation', [ReservationController::class, 'store'])->name('reservation.store');
+    Route::post('/order', [\App\Http\Controllers\OrderController::class, 'store'])->name('order.store');
 });
 
 
@@ -84,6 +90,7 @@ Route::middleware(['admin'])->group(function () {
     
     // Review management routes
     Route::post('/admin/reviews/{review}/reply', [\App\Http\Controllers\AdminController::class, 'replyToReview'])->name('admin.reviews.reply');
+    Route::put('/admin/reviews/{review}/reply', [\App\Http\Controllers\AdminController::class, 'updateReplyToReview'])->name('admin.reviews.reply.update');
     Route::delete('/admin/reviews/{review}', [\App\Http\Controllers\AdminController::class, 'deleteReview'])->name('admin.reviews.delete');
     
     Route::put('/admin/reservations/{id}', [\App\Http\Controllers\AdminController::class, 'updateReservation'])->name('admin.reservations.update');

@@ -27,14 +27,18 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function handle(Request $request, Closure $next)
+    public function orders()
     {
-        if (Auth::check() && Auth::user()->role === 'admin') {
-            return $next($request);
-        }
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
-        return redirect()->route('admin.login');
+        return $this->hasMany(Order::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
     }
 }
