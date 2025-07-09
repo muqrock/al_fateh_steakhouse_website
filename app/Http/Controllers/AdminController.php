@@ -206,6 +206,28 @@ public function deleteReservation($id)
     return redirect()->back()->with('success', 'Reservation deleted successfully.');
 }
 
+public function updateReservation(Request $request, $id)
+{
+    // 1. Find the reservation or fail
+    $reservation = Reservation::findOrFail($id);
+
+    // 2. Validate the incoming data
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'required|string|max:20',
+        'reservation_date' => 'required|date',
+        'reservation_time' => 'required|date_format:H:i',
+        'guests' => 'required|integer|min:1',
+        'special_request' => 'nullable|string',
+    ]);
+
+    // 3. Update the reservation with validated data
+    $reservation->update($validatedData);
+
+    // 4. Redirect back to the reservations list with a success message
+    return redirect()->route('admin.reservations')->with('success', 'Reservation updated successfully.');
+}
 
     /**
      * Show reviews management page.
