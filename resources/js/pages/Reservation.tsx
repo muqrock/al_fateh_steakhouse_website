@@ -22,11 +22,12 @@ export default function Reservation() {
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    name: auth?.user?.name || '',
-    email: auth?.user?.email || '',
-    reservation_date: '',
-    reservation_time: '',
-    guests: 1,
+  name: auth?.user?.name || '',
+  email: auth?.user?.email || '',
+  phone: '',
+  reservation_date: '',
+  reservation_time: '',
+  guests: 1,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,45 +68,54 @@ export default function Reservation() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <select
-                className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-                value={data.guests}
-                onChange={(e) => setData('guests', parseInt(e.target.value))}
-                required
-              >
-                <option value="">Select Guests</option>
-                <option value="1">1 person</option>
-                <option value="2">2 people</option>
-                <option value="3">3 people</option>
-                <option value="4">4 people</option>
-                <option value="5">5+ people</option>
-              </select>
+<form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+  <input
+    type="tel"
+    placeholder="Phone Number"
+    value={data.phone}
+    onChange={(e) => setData('phone', e.target.value)}
+    required
+    className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 col-span-2"
+  />
 
-              <input
-                type="date"
-                value={data.reservation_date}
-                onChange={(e) => setData('reservation_date', e.target.value)}
-                className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-                required
-              />
+  <select
+    value={data.guests}
+    onChange={(e) => setData('guests', parseInt(e.target.value))}
+    required
+    className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+  >
+    <option value="">Select Guests</option>
+    <option value="1">1 person</option>
+    <option value="2">2 people</option>
+    <option value="3">3 people</option>
+    <option value="4">4 people</option>
+    <option value="5">5+ people</option>
+  </select>
 
-              <input
-                type="time"
-                value={data.reservation_time}
-                onChange={(e) => setData('reservation_time', e.target.value)}
-                className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-                required
-              />
+  <input
+    type="date"
+    value={data.reservation_date}
+    onChange={(e) => setData('reservation_date', e.target.value)}
+    required
+    className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+/>
 
-              <button
-                type="submit"
-                disabled={processing}
-                className="bg-orange-500 text-white font-bold px-6 py-3 rounded shadow hover:bg-orange-600 transition"
-              >
-                Reserve Table
-              </button>
-            </form>
+  <input
+    type="time"
+    value={data.reservation_time}
+    onChange={(e) => setData('reservation_time', e.target.value)}
+    required
+    className="p-3 border-2 border-orange-400 rounded bg-white text-orange-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+/>
+
+  <button
+    type="submit"
+    className="bg-orange-500 text-white font-bold px-6 py-3 rounded shadow hover:bg-orange-600 transition col-span-full"
+  >
+    Reserve Table
+  </button>
+</form>
+
           </div>
         </div>
 
