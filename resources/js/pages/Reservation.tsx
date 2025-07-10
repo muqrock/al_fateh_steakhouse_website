@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useEffect } from 'react';
 import { useForm, usePage, router } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
 
@@ -55,6 +55,34 @@ export default function Reservation() {
 
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
 
+  // Redirect to login if user is not authenticated
+  useEffect(() => {
+    if (!isCustomerLoggedIn) {
+      router.visit('/login');
+      return;
+    }
+  }, [isCustomerLoggedIn]);
+
+  // Don't render the component if user is not logged in
+  if (!isCustomerLoggedIn) {
+    return (
+      <CustomerLayout
+        currentPage="reservation"
+        transparentNav={true}
+        fullHeight={true}
+        backgroundImage="https://scontent.fkul16-3.fna.fbcdn.net/v/t39.30808-6/475193504_1092421105916208_2638760133427875124_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1CXr63Try8UQ7kNvwFi4Tjb&_nc_oc=AdnEQwvjvMRGNCSWo3-5SHI3Ck5-coO7mpbXa6jsauYhInmcloX786TTVRiEu0-HY2Y&_nc_zt=23&_nc_ht=scontent.fkul16-3.fna&_nc_gid=2zT5DF3Nza1JWOJIHl-PSA&oh=00_AfS7ydDDNNgObhL6shtFcqf498IgHvvOpQTUxyhFj2VUtQ&oe=68753CAC"
+        title="Reservation"
+      >
+        <div className="flex-1 flex flex-col min-h-screen justify-center items-center">
+          <div className="bg-black/60 rounded-xl p-8 text-center">
+            <h2 className="text-2xl font-bold text-white mb-4">Redirecting to Login...</h2>
+            <p className="text-orange-200">Please log in to make a reservation.</p>
+          </div>
+        </div>
+      </CustomerLayout>
+    );
+  }
+
   const { data, setData, post, processing, errors, reset } = useForm({
     name: auth?.user?.name || '',
     email: auth?.user?.email || '',
@@ -85,12 +113,12 @@ export default function Reservation() {
       currentPage="reservation"
       transparentNav={true}
       fullHeight={true}
-      backgroundImage="https://i.pinimg.com/1200x/9d/49/0c/9d490ce54b6820bc747e9b00c6bb5d76.jpg"
+      backgroundImage="https://scontent.fkul16-3.fna.fbcdn.net/v/t39.30808-6/475193504_1092421105916208_2638760133427875124_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1CXr63Try8UQ7kNvwFi4Tjb&_nc_oc=AdnEQwvjvMRGNCSWo3-5SHI3Ck5-coO7mpbXa6jsauYhInmcloX786TTVRiEu0-HY2Y&_nc_zt=23&_nc_ht=scontent.fkul16-3.fna&_nc_gid=2zT5DF3Nza1JWOJIHl-PSA&oh=00_AfS7ydDDNNgObhL6shtFcqf498IgHvvOpQTUxyhFj2VUtQ&oe=68753CAC"
       title="Reservation"
     >
       <div className="flex-1 flex flex-col min-h-screen">
         <div className="flex flex-1 justify-center items-center p-4">
-          <div className="bg-gradient-to-br from-orange-50 to-amber-50/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-3xl border border-orange-200/70">
+          <div className="bg-gradient-to-br from-orange-50/70 to-amber-50/70 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-3xl border border-orange-200/40">
 
             <h2 className="text-3xl font-bold text-orange-900 mb-6 underline text-center drop-shadow">
               Table Reservation

@@ -48,10 +48,10 @@ Route::get('/about', function () {
 
 // Public view routes (accessible without login)
 Route::get('/review', [ReviewController::class, 'index'])->name('review.index');
-Route::get('/reservation', [ReservationController::class, 'index'])->name('reservation.index');
 
 // Customer-only authenticated routes
 Route::middleware(['customer'])->group(function () {
+    Route::get('/reservation', [ReservationController::class, 'index'])->name('reservation.index');
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');

@@ -23,7 +23,7 @@ export default function HomePage() {
       currentPage="home" 
       transparentNav={true} 
       fullHeight={true}
-      backgroundImage="/images/steak.jpg"
+      backgroundImage="https://scontent.fkul16-1.fna.fbcdn.net/v/t39.30808-6/480592153_1120290986462553_3246017696480109358_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=103&ccb=1-7&_nc_sid=833d8c&_nc_ohc=36i0no1h3BgQ7kNvwGuMD4d&_nc_oc=AdnDv37NMlLXQ3KBi7AkKkMSG9L9ZPFsWiqwRQNvcOTJj73CPyfr_AysQ14AfWHYINk&_nc_zt=23&_nc_ht=scontent.fkul16-1.fna&_nc_gid=aSZCA_P5oJ83o0di-1Fbbg&oh=00_AfSQZjrh9acw4Dj51ywd_8WshHyDX6PW0GZ2N8Hwdukdfg&oe=68753153"
       title="Home"
     >
       {/* Main Content - Centered */}
@@ -35,9 +35,17 @@ export default function HomePage() {
         </div>
         
         {/* Tagline */}
-        <p className="text-2xl mb-10 italic">
+        <p className="text-2xl mb-6 italic">
           Serving The Best Western Food For Our Lovely Customer
         </p>
+        
+        {/* Opening Hours */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-2 text-orange-200">Opening Hours</h3>
+          <p className="text-lg text-white">
+            3:00 PM - 11:00 PM Every Day
+          </p>
+        </div>
         
         {/* Menu Button */}
         <button 

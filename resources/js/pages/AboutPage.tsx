@@ -23,7 +23,7 @@ export default function AboutPage() {
       currentPage="about"
       transparentNav={true}
       fullHeight={true}
-      backgroundImage="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2940&auto=format&fit=crop"
+      backgroundImage="https://scontent.fkul16-2.fna.fbcdn.net/v/t39.30808-6/475998290_1099687531856232_8311037042774031704_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=833d8c&_nc_ohc=RFfh8GjjVbYQ7kNvwE2I4fW&_nc_oc=AdnbfcPNr6N-i2q90wXykOJ0-l5EO4WNN3K3ek7LAaumMd93JcK-kzqNeWtCx-I0730&_nc_zt=23&_nc_ht=scontent.fkul16-2.fna&_nc_gid=kFtaQeATBe8NR1eJ4laJpA&oh=00_AfREkte2wUmj1vL4I0151aBT-UqRBqLZoI0Xu0nw_pgP1Q&oe=68751EB2"
       title="About Us"
     >
       <div className="flex-1 flex flex-col text-white">

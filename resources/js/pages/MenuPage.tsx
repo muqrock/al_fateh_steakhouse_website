@@ -29,7 +29,7 @@ type MenuSectionProps = {
 
 const MenuItem = ({ imageUrl, name, price, onClick }: MenuItemProps & { onClick?: () => void }) => (
   <div
-    className="bg-white rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
+    className="bg-white/90 rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer"
     onClick={onClick}
     tabIndex={0}
     role="button"
@@ -71,10 +71,10 @@ export default function MenuPage() {
       currentPage="menu"
       transparentNav={true}
       fullHeight={true}
-      backgroundImage="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?q=80&w=2940&auto=format&fit=crop"
+      backgroundImage="https://scontent.fkul16-2.fna.fbcdn.net/v/t39.30808-6/475973444_1099047458586906_1471199143652275342_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=833d8c&_nc_ohc=P9T2Kl0P6BgQ7kNvwHLwGbO&_nc_oc=Adl3ozV0dvI6avP54mmITaSgAHBiDhkbJqp6keeUNQUW_d_rq8Ps_yZT50ftFPvvOHQ&_nc_zt=23&_nc_ht=scontent.fkul16-2.fna&_nc_gid=PA-1Etd0iN12GKHJ6WggEQ&oh=00_AfTmQynrKwXbWYmW-eU-atfOjxH8R8w-he5tpzSpZ8LKYA&oe=6875205C"
       title="Menu"
     >
-      <main className="max-w-7xl mx-auto p-8 my-10 bg-gradient-to-br from-orange-100 to-amber-100/95 backdrop-blur-sm rounded-xl shadow-2xl relative border border-orange-300/60">
+      <main className="max-w-7xl mx-auto p-8 my-10 bg-gradient-to-br from-orange-100/70 to-amber-100/70 backdrop-blur-sm rounded-xl shadow-2xl relative border border-orange-300/40">
         {Object.entries(menu).length === 0 ? (
           <p className="text-center text-orange-800 font-semibold">No menu items available.</p>
         ) : (
@@ -96,7 +96,7 @@ export default function MenuPage() {
         {/* Popup Modal for Menu Details */}
         {selectedMenu && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border-4 border-orange-400 relative animate-fade-in">
+            <div className="bg-white/95 rounded-xl shadow-2xl max-w-md w-full p-8 border-4 border-orange-400 relative animate-fade-in">
               <button
                 className="absolute top-3 right-3 text-gray-500 hover:text-orange-500 text-2xl font-bold focus:outline-none"
                 onClick={() => setSelectedMenu(null)}
