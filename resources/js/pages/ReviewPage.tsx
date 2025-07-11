@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
+import Swal from 'sweetalert2';
 
 type Review = {
   id: number;
@@ -39,6 +40,7 @@ export default function ReviewPage() {
     rating: 0,
     image_url: '',
   });
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Check if user is logged in as customer
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
@@ -59,9 +61,32 @@ export default function ReviewPage() {
       return;
     }
     
+    // Validation: require rating and comment
+    if (!data.rating || !data.comment.trim()) {
+      Swal.fire({
+        title: 'Please complete the form!',
+        text: 'You must provide a rating and write a review before submitting.',
+        icon: 'error',
+        showConfirmButton: true,
+        confirmButtonColor: '#f97316',
+        confirmButtonText: 'OK',
+        draggable: true
+      });
+      return;
+    }
+    
     setData('image_url', `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`);
     post('/review', {
-      onSuccess: () => reset(),
+      onSuccess: () => {
+        reset();
+        Swal.fire({
+          title: 'Review added successfully!',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 2000,
+          draggable: true
+        });
+      },
     });
   };
 
@@ -77,10 +102,12 @@ export default function ReviewPage() {
       currentPage="review"
       transparentNav={true}
       fullHeight={true}
-      backgroundImage="/images/steak.jpg"
+      backgroundImage="https://scontent.fpen1-1.fna.fbcdn.net/v/t39.30808-6/476130548_1099553275202991_5856351097499968454_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=7zIdn5NL0P8Q7kNvwF4xaZV&_nc_oc=AdlT-fK5XpJft_S5xh6hcOykjQJwECXrznIYR0hQyG91OMTrPGgnG4Lmx0HjeEeo8XowjrbFkyJKL83cwd4XKZDr&_nc_zt=23&_nc_ht=scontent.fpen1-1.fna&_nc_gid=mWcX3BG_acdFj0kwlEX7yA&oh=00_AfRIDcvITPtc1IUe_bYsJJQWSEwvtMyVX1Tk8j33lDzhXQ&oe=68771A8D"
       title="Reviews"
     >
       <main className="max-w-4xl mx-auto px-6 py-10 bg-gradient-to-br from-orange-50 to-amber-100/95 backdrop-blur-sm rounded-xl shadow-2xl my-10 relative z-10 border border-orange-300/70">
+      {/* Success Toast Popup removed, now handled by SweetAlert2 */}
+
       {/* Header */}
       <div className="text-center mb-10">
         <h1 className="text-4xl font-extrabold text-orange-900">Customer Reviews</h1>
@@ -101,12 +128,12 @@ export default function ReviewPage() {
               {reviews
                 .filter(review => filterRating === 0 || review.rating === filterRating)
                 .map((review) => (
-                <div key={review.id} className="bg-white/95 rounded-xl border border-orange-300/60 p-6 shadow-lg">
+                <div key={review.id} className="bg-white/90 border-2 border-orange-400 rounded-xl p-6 shadow-xl">
                   <div className="flex items-start gap-4">
                     <img
                       src={review.image_url || `https://i.pravatar.cc/150?img=${review.id}`}
                       alt={`${review.name}'s avatar`}
-                      className="w-12 h-12 rounded-full border-2 border-orange-400"
+                      className="w-12 h-12 rounded-full border-2 border-orange-400 shadow"
                     />
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-2">
@@ -117,17 +144,16 @@ export default function ReviewPage() {
                             <span className="text-orange-600 text-sm">({review.rating}/5)</span>
                           </div>
                         </div>
-                        <span className="text-orange-500 text-sm">
+                        <span className="text-orange-500 text-xs font-semibold">
                           {new Date(review.created_at).toLocaleDateString('en-GB')}
                         </span>
                       </div>
-                      <p className="text-orange-800 mb-3 italic">"{review.comment}"</p>
-                      
+                      <p className="text-orange-900 mb-3 italic font-medium">"{review.comment}"</p>
                       {/* Admin Reply */}
                       {review.admin_reply && (
-                        <div className="bg-orange-100/80 border-l-4 border-orange-500 p-4 mt-3 rounded-r-lg">
+                        <div className="bg-orange-100 border-l-4 border-orange-500 p-4 mt-3 rounded-r-lg">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-orange-800 font-semibold text-sm">
+                            <span className="text-orange-800 font-semibold text-xs">
                               Reply by {review.admin?.name || 'Al-Fateh Steak House'}
                             </span>
                             {review.admin_replied_at && (
@@ -146,11 +172,11 @@ export default function ReviewPage() {
             </div>
             {/* Rating Filter */}
             <div className="flex justify-center mt-6">
-              <div className="flex items-center gap-2 bg-white/95 rounded-lg p-3 border border-orange-300/60 shadow-md">
-                <span className="text-orange-900 text-sm">Filter by rating:</span>
+              <div className="flex items-center gap-2 bg-white/90 rounded-lg p-3 border-2 border-orange-400 shadow">
+                <span className="text-orange-900 text-sm font-semibold">Filter by rating:</span>
                 <button
                   onClick={() => setFilterRating(0)}
-                  className={`px-3 py-1 rounded text-sm ${filterRating === 0 ? 'bg-orange-500 text-white' : 'bg-purple-100 text-purple-700'}`}
+                  className={`px-3 py-1 rounded text-sm font-bold transition-colors duration-150 ${filterRating === 0 ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'}`}
                 >
                   All
                 </button>
@@ -158,7 +184,7 @@ export default function ReviewPage() {
                   <button
                     key={rating}
                     onClick={() => setFilterRating(rating)}
-                    className={`px-2 py-1 rounded text-sm ${filterRating === rating ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800'}`}
+                    className={`px-2 py-1 rounded text-sm font-bold transition-colors duration-150 ${filterRating === rating ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'}`}
                   >
                     {rating}★
                   </button>
@@ -170,52 +196,66 @@ export default function ReviewPage() {
 
         {/* Review Form - Only show if customer is logged in */}
         {isCustomerLoggedIn ? (
-          <section className="space-y-5 bg-white/95 rounded-xl border border-orange-300/60 shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-orange-900">Leave a Review</h2>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="bg-orange-100/80 p-3 rounded border border-orange-300/60">
-                <label className="text-sm text-orange-800">Reviewing as:</label>
-                <p className="text-orange-900 font-medium">{auth.user?.name}</p>
+          <section className="space-y-5 bg-gradient-to-br from-orange-50/90 to-amber-50/90 backdrop-blur-sm rounded-xl border-2 border-orange-400 shadow-2xl text-orange-900 p-8 mb-12">
+          <h2 className="text-2xl font-bold text-orange-700 mb-2 text-center">Leave a Review</h2>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-orange-900 font-semibold mb-1">Your Name</label>
+                <input
+                  type="text"
+                  value={auth?.user?.name || ''}
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-orange-200 bg-orange-100/70 rounded-md text-orange-700 font-semibold shadow-sm"
+                />
               </div>
               <div>
-                <label className="text-lg font-medium text-orange-900">Your Rating:</label>
-                <div className="flex gap-2 mt-1 cursor-pointer">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      onClick={() => setData('rating', star)}
-                      className={`text-2xl ${data.rating >= star ? 'text-yellow-400' : 'text-gray-400'} hover:scale-110 transition`}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
+                <label className="block text-orange-900 font-semibold mb-1">Your Email</label>
+                <input
+                  type="email"
+                  value={auth?.user?.email || ''}
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-orange-200 bg-orange-100/70 rounded-md text-orange-700 font-semibold shadow-sm"
+                />
               </div>
+            </div>
+            <div>
+              <label className="block text-orange-900 font-semibold mb-1">Your Rating</label>
+              <div className="flex gap-2 mt-1 cursor-pointer">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setData('rating', star)}
+                    className={`text-2xl ${data.rating >= star ? 'text-orange-500' : 'text-orange-200'} hover:scale-110 transition`}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              {errors.rating && <p className="text-red-500 text-sm mt-1">{errors.rating}</p>}
+            </div>
+            <div>
+              <label className="block text-orange-900 font-semibold mb-1">Your Review</label>
               <textarea
                 rows={4}
-                placeholder="Write your review here..."
                 value={data.comment}
                 onChange={e => setData('comment', e.target.value)}
-                className="w-full p-3 bg-white text-orange-800 border border-orange-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full px-4 py-3 border-2 border-orange-200 rounded-md bg-white/90 text-orange-800 shadow-sm focus:border-orange-400 focus:ring-orange-400"
+                placeholder="Share your experience..."
                 required
               />
-              {errors && (
-                <div className="text-red-600 text-sm">
-                  {Object.values(errors).map((err, i) => (
-                    <div key={i}>{err}</div>
-                  ))}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={processing}
-                className="w-full bg-orange-500 text-white font-bold py-3 rounded uppercase tracking-wide hover:bg-orange-600 transition duration-300 shadow-lg"
-              >
-                {processing ? 'Submitting...' : 'Submit Review'}
-              </button>
-            </form>
-          </section>
+              {errors.comment && <p className="text-red-500 text-sm mt-1">{errors.comment}</p>}
+            </div>
+            <button
+              type="submit"
+              disabled={processing}
+              className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold uppercase tracking-wider transition-colors shadow-md hover:bg-orange-600 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {processing ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </form>
+        </section>
         ) : (
           <section className="space-y-5 bg-white/95 rounded-xl border border-orange-300/60 shadow-lg p-6 text-center">
             <h2 className="text-2xl font-bold text-orange-900">Want to Leave a Review?</h2>
