@@ -10,18 +10,19 @@ class CustomerMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login')->with('error', 'Please log in to access this area.');
         }
 
         $user = Auth::user();
-        
-        if (!$user || $user->role !== 'customer') {
+
+        if (! $user || $user->role !== 'customer') {
             // Force logout if non-customer tries to access customer area
             Auth::logout();
             $request->session()->flush();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+
             return redirect()->route('login')->with('error', 'Customer account required.');
         }
 

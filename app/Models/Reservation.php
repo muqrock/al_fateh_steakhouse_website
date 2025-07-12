@@ -14,6 +14,4 @@ class Reservation extends Model
         'reservation_time',
         'guests',
     ];
-
-
 }

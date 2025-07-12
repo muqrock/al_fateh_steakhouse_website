@@ -26,6 +26,7 @@ class AuthenticatedSessionController extends Controller
         try {
             $request->authenticate();
             $request->session()->regenerate();
+
             return redirect()->intended(route('home'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
@@ -37,16 +38,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request)
     {
-        // Get the current user before logout
-        $currentUser = Auth::user();
-        
-        // Only logout if current user is a customer (not admin)
-        if ($currentUser && $currentUser->role === 'customer') {
-            Auth::guard('web')->logout();
-            $request->session()->flush();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-        }
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect('/');
     }

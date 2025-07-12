@@ -11,12 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('reviews')) {
+            return;
+        }
+
         Schema::table('reviews', function (Blueprint $table) {
-            $table->text('admin_reply')->nullable();
-            $table->unsignedBigInteger('admin_id')->nullable();
-            $table->timestamp('admin_replied_at')->nullable();
-            
-            $table->foreign('admin_id')->references('id')->on('users')->onDelete('set null');
+            if (! Schema::hasColumn('reviews', 'admin_reply')) {
+                $table->text('admin_reply')->nullable();
+            }
+            if (! Schema::hasColumn('reviews', 'admin_id')) {
+                $table->unsignedBigInteger('admin_id')->nullable();
+            }
+            if (! Schema::hasColumn('reviews', 'admin_replied_at')) {
+                $table->timestamp('admin_replied_at')->nullable();
+            }
+
+            // Add foreign key if column exists and table exists
+            if (Schema::hasColumn('reviews', 'admin_id') && Schema::hasTable('users')) {
+                $table->foreign('admin_id')->references('id')->on('users')->onDelete('set null');
+            }
         });
     }
 
@@ -25,8 +38,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('reviews')) {
+            return;
+        }
+
         Schema::table('reviews', function (Blueprint $table) {
-            $table->dropForeign(['admin_id']);
+            if (Schema::hasColumn('reviews', 'admin_id')) {
+                $table->dropForeign(['admin_id']);
+            }
             $table->dropColumn(['admin_reply', 'admin_id', 'admin_replied_at']);
         });
     }

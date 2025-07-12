@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -23,11 +24,12 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => ['nullable', 'confirmed', Password::defaults()],
         ]);
 
@@ -48,16 +50,18 @@ class ProfileController extends Controller
      */
     public function paymentHistory(Request $request)
     {
-        $query = Auth::user()->orders();
+        /** @var User $user */
+        $user = Auth::user();
+        $query = $user->orders();
 
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->whereJsonContains('items', [['name' => $search]])
-                  ->orWhere('payment_method', 'like', '%' . $search . '%')
-                  ->orWhere('status', 'like', '%' . $search . '%')
-                  ->orWhere('notes', 'like', '%' . $search . '%');
+                    ->orWhere('payment_method', 'like', '%'.$search.'%')
+                    ->orWhere('status', 'like', '%'.$search.'%')
+                    ->orWhere('notes', 'like', '%'.$search.'%');
             });
         }
 
@@ -92,7 +96,7 @@ class ProfileController extends Controller
         // Sort options
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-        
+
         if ($sortBy === 'total_amount') {
             $query->orderBy('total_amount', $sortOrder);
         } elseif ($sortBy === 'status') {
@@ -107,7 +111,7 @@ class ProfileController extends Controller
 
         return Inertia::render('PaymentHistory', [
             'orders' => $orders,
-            'filters' => $request->only(['search', 'date_from', 'date_to', 'min_amount', 'max_amount', 'status_filter', 'payment_filter', 'sort_by', 'sort_order'])
+            'filters' => $request->only(['search', 'date_from', 'date_to', 'min_amount', 'max_amount', 'status_filter', 'payment_filter', 'sort_by', 'sort_order']),
         ]);
     }
 }

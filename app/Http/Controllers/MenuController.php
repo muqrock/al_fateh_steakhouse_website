@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\MenuItem;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
-use GuzzleHttp\Client;
+use Inertia\Inertia;
 
 class MenuController extends Controller
 {
@@ -16,22 +16,22 @@ class MenuController extends Controller
      */
     public function index()
     {
-    $menuItems = MenuItem::all();
+        $menuItems = MenuItem::all();
 
-    // If visiting /admin/menu, show admin view
-    if (request()->is('admin*')) {
-        return inertia('AdminMenuList', [
-            'menus' => $menuItems
+        // If visiting /admin/menu, show admin view
+        if (request()->is('admin*')) {
+            return inertia('AdminMenuList', [
+                'menus' => $menuItems,
+            ]);
+        }
+
+        // For public MenuPage
+        $groupedItems = $menuItems->groupBy('category');
+
+        return inertia('MenuPage', [
+            'menu' => $groupedItems,
         ]);
     }
-
-    // For public MenuPage
-    $groupedItems = $menuItems->groupBy('category');
-    return inertia('MenuPage', [
-        'menu' => $groupedItems
-    ]);
-}
-
 
     /**
      * Show the form for creating a new resource.
@@ -53,18 +53,18 @@ class MenuController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,heic|max:2048', // Allow .heic
         ]);
 
-        $menu_item = new MenuItem();
+        $menu_item = new MenuItem;
         $menu_item->name = $validated['name'];
         $menu_item->category = $validated['category'] ?? null; // Handle null category
         $menu_item->price = $validated['price'];
-        
+
         if ($request->hasFile('image')) {
             $url = $this->uploadToSupabase($request->file('image'));
             $menu_item->image = $url;
         }
-        
+
         $menu_item->save();
-        
+
         return redirect()->back()->with('success', 'Menu item created successfully');
     }
 
@@ -82,7 +82,7 @@ class MenuController extends Controller
     public function edit(MenuItem $menu)
     {
         return Inertia::render('AdminMenuList', [
-            'editMenu' => $menu
+            'editMenu' => $menu,
         ]);
     }
 
@@ -101,15 +101,15 @@ class MenuController extends Controller
         $menu->name = $validated['name'];
         $menu->category = $validated['category'] ?? null;
         $menu->price = $validated['price'];
-        
+
         if ($request->hasFile('image')) {
             // No need to delete old image in Supabase for now
             $url = $this->uploadToSupabase($request->file('image'));
             $menu->image = $url;
         }
-        
+
         $menu->save();
-        
+
         return redirect()->back()->with('success', 'Menu item updated successfully');
     }
 
@@ -122,6 +122,7 @@ class MenuController extends Controller
             Storage::disk('public')->delete($menu->image);
         }
         $menu->delete();
+
         return redirect()->back()->with('success', 'Menu item deleted successfully');
     }
 
@@ -131,7 +132,7 @@ class MenuController extends Controller
         $supabaseUrl = env('SUPABASE_URL');
         $serviceKey = env('SUPABASE_SERVICE_KEY');
 
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
         $path = "public/$filename"; // 'public' folder in your bucket
 
         $client = new Client([
@@ -154,6 +155,7 @@ class MenuController extends Controller
             // Construct public URL
             return "$supabaseUrl/storage/v1/object/$bucket/$path";
         }
+
         return null;
     }
 }

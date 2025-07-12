@@ -36,8 +36,12 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
     };
 
     return (
-        <AuthLayout title="Reset password" description="Please enter your new password below">
+        <AuthLayout>
             <Head title="Reset password" />
+
+            <div className="mb-4 text-sm text-gray-600">
+                Please enter your new password below.
+            </div>
 
             <form onSubmit={submit}>
                 <div className="grid gap-6">

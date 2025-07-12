@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('orders')) {
+            return;
+        }
+
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('payment_method')->after('status'); // cash, online_banking, ewallet
+            if (! Schema::hasColumn('orders', 'payment_method')) {
+                $table->string('payment_method')->after('status'); // cash, online_banking, ewallet
+            }
         });
     }
 
@@ -21,8 +27,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('orders')) {
+            return;
+        }
+
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('payment_method');
+            if (Schema::hasColumn('orders', 'payment_method')) {
+                $table->dropColumn('payment_method');
+            }
         });
     }
 };

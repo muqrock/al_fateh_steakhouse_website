@@ -1,20 +1,14 @@
-import { usePage } from '@inertiajs/react';
+import { User } from '@/types';
 
-export default function UserInfo() {
-  const { props } = usePage();
-  const user = props.auth?.user;
+interface UserInfoProps {
+    user: User;
+}
 
-  // ✅ Prevent crash if user is null
-  if (!user) return null;
-
-  return (
-    <div className="flex items-center gap-2">
-      <img
-        src={user.avatar ?? 'https://placehold.co/40x40'}
-        className="w-8 h-8 rounded-full"
-        alt="User Avatar"
-      />
-      <span>{user.name}</span>
-    </div>
-  );
+export default function UserInfo({ user }: UserInfoProps) {
+    return (
+        <div className="flex items-center gap-2">
+            <img src={user.avatar ?? 'https://placehold.co/40x40'} className="h-8 w-8 rounded-full" alt="User Avatar" />
+            <span>{user.name}</span>
+        </div>
+    );
 }

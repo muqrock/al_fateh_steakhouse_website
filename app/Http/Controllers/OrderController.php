@@ -14,7 +14,7 @@ class OrderController extends Controller
             'items' => 'required|array',
             'total_amount' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,online_banking,ewallet',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
         ]);
 
         $order = Order::create([
@@ -23,13 +23,13 @@ class OrderController extends Controller
             'payment_method' => $request->payment_method,
             'status' => 'completed', // Mark as completed since it's a dummy payment
             'items' => $request->items,
-            'notes' => $request->notes
+            'notes' => $request->notes,
         ]);
 
         return response()->json([
             'success' => true,
             'order_id' => $order->id,
-            'message' => 'Order placed successfully!'
+            'message' => 'Order placed successfully!',
         ]);
     }
 }

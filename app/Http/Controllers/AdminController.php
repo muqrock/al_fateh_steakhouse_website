@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MenuItem;
+use App\Models\Reservation;
+use App\Models\Review;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Models\User;
-use App\Models\Reservation;
-use App\Models\Review;
-use App\Models\MenuItem;
-use App\Models\Order;
 
 class AdminController extends Controller
 {
@@ -44,8 +43,8 @@ class AdminController extends Controller
 
         // Popular menu items (based on review mentions - you can adjust this logic)
         $popularMenuItems = MenuItem::withCount(['reviews' => function ($query) {
-                $query->whereNotNull('menu_item_id');
-            }])
+            $query->whereNotNull('menu_item_id');
+        }])
             ->orderByDesc('reviews_count')
             ->limit(5)
             ->get();
@@ -60,7 +59,7 @@ class AdminController extends Controller
                 'name' => $item->name,
                 'category' => $item->category,
                 'price' => $item->price,
-                'reviews_count' => $item->reviews_count ?? 0
+                'reviews_count' => $item->reviews_count ?? 0,
             ];
         });
 
@@ -68,7 +67,7 @@ class AdminController extends Controller
         $weeklyReservations = Reservation::where('created_at', '>=', now()->subWeek())->count();
         $weeklyReviews = Review::where('created_at', '>=', now()->subWeek())->count();
         $yesterdayReservations = Reservation::whereDate('created_at', now()->subDay())->count();
-        
+
         // Menu item distribution by category
         $menuByCategory = MenuItem::selectRaw('category, COUNT(*) as count')
             ->groupBy('category')
@@ -83,8 +82,8 @@ class AdminController extends Controller
             ->where('created_at', '>=', now()->subMonth()->startOfMonth())
             ->where('created_at', '<', $currentMonth)
             ->count();
-        
-        $customerGrowthPercentage = $customerGrowthLastMonth > 0 
+
+        $customerGrowthPercentage = $customerGrowthLastMonth > 0
             ? round((($customerGrowthThisMonth - $customerGrowthLastMonth) / $customerGrowthLastMonth) * 100, 1)
             : 100;
 
@@ -98,7 +97,7 @@ class AdminController extends Controller
                     'date' => $reservation->reservation_date,
                     'time' => $reservation->reservation_time,
                     'guests' => $reservation->guests,
-                    'created_at' => $reservation->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i')
+                    'created_at' => $reservation->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i'),
                 ];
             });
 
@@ -110,8 +109,8 @@ class AdminController extends Controller
                 return [
                     'user_name' => $review->user ? $review->user->name : ($review->name ?? 'Anonymous'),
                     'rating' => $review->rating ?? 'N/A',
-                    'comment' => substr($review->comment ?? '', 0, 100) . (strlen($review->comment ?? '') > 100 ? '...' : ''),
-                    'created_at' => $review->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i')
+                    'comment' => substr($review->comment ?? '', 0, 100).(strlen($review->comment ?? '') > 100 ? '...' : ''),
+                    'created_at' => $review->created_at->setTimezone(config('app.timezone'))->format('d-m-Y H:i'),
                 ];
             });
 
@@ -145,7 +144,7 @@ class AdminController extends Controller
             'popular_menu_items' => $popularMenuItems,
             'recent_reservations' => $recentReservations,
             'recent_reviews' => $recentReviews,
-            
+
             // Additional analytics
             'weekly_reservations' => $weeklyReservations,
             'weekly_reviews' => $weeklyReviews,
@@ -157,7 +156,7 @@ class AdminController extends Controller
         ];
 
         return Inertia::render('Admin/Dashboard', [
-            'stats' => $stats
+            'stats' => $stats,
         ]);
     }
 
@@ -169,8 +168,9 @@ class AdminController extends Controller
     public function users()
     {
         $users = User::latest()->paginate(10);
+
         return Inertia::render('Admin/Users', [
-            'users' => $users
+            'users' => $users,
         ]);
     }
 
@@ -179,55 +179,56 @@ class AdminController extends Controller
      *
      * @return \Inertia\Response
      */
-public function reservations()
-{
-    $reservations = Reservation::all();
-   return Inertia::render('Admin/AdminReservations', [
-    'reservations' => $reservations,
-]);
+    public function reservations()
+    {
+        $reservations = Reservation::all();
 
-}
+        return Inertia::render('Admin/AdminReservations', [
+            'reservations' => $reservations,
+        ]);
 
-/**
- * Delete a reservation.
- *
- * @param int $id
- * @return \Illuminate\Http\RedirectResponse
- */
-public function deleteReservation($id)
-{
-    $reservation = Reservation::find($id);
-
-    if (!$reservation) {
-        return redirect()->back()->with('error', 'Reservation not found.');
     }
 
-    $reservation->delete();
+    /**
+     * Delete a reservation.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteReservation($id)
+    {
+        $reservation = Reservation::find($id);
 
-    return redirect()->back()->with('success', 'Reservation deleted successfully.');
-}
+        if (! $reservation) {
+            return redirect()->back()->with('error', 'Reservation not found.');
+        }
 
-public function updateReservation(Request $request, $id)
-{
-    // 1. Find the reservation or fail
-    $reservation = Reservation::findOrFail($id);
+        $reservation->delete();
 
-    // 2. Validate the incoming data
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
-        'phone' => 'required|string|max:20',
-        'reservation_date' => 'required|date',
-        'reservation_time' => 'required|date_format:H:i',
-        'guests' => 'required|integer|min:1',
-    ]);
+        return redirect()->back()->with('success', 'Reservation deleted successfully.');
+    }
 
-    // 3. Update the reservation with validated data
-    $reservation->update($validatedData);
+    public function updateReservation(Request $request, $id)
+    {
+        // 1. Find the reservation or fail
+        $reservation = Reservation::findOrFail($id);
 
-    // 4. Redirect back to the reservations list with a success message
-    return redirect()->route('admin.reservations')->with('success', 'Reservation updated successfully.');
-}
+        // 2. Validate the incoming data
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'reservation_date' => 'required|date',
+            'reservation_time' => 'required|date_format:H:i',
+            'guests' => 'required|integer|min:1',
+        ]);
+
+        // 3. Update the reservation with validated data
+        $reservation->update($validatedData);
+
+        // 4. Redirect back to the reservations list with a success message
+        return redirect()->route('admin.reservations')->with('success', 'Reservation updated successfully.');
+    }
 
     /**
      * Show reviews management page.
@@ -259,17 +260,15 @@ public function updateReservation(Request $request, $id)
                     ] : null,
                 ];
             });
-            
+
         return Inertia::render('Admin/Reviews', [
-            'reviews' => $reviews
+            'reviews' => $reviews,
         ]);
     }
 
     /**
      * Reply to a customer review
      *
-     * @param Request $request
-     * @param Review $review
      * @return \Illuminate\Http\RedirectResponse
      */
     public function replyToReview(Request $request, Review $review)
@@ -290,8 +289,6 @@ public function updateReservation(Request $request, $id)
     /**
      * Update an admin reply to a review
      *
-     * @param Request $request
-     * @param Review $review
      * @return \Illuminate\Http\RedirectResponse
      */
     public function updateReplyToReview(Request $request, Review $review)
@@ -311,7 +308,6 @@ public function updateReservation(Request $request, $id)
     /**
      * Delete a customer review
      *
-     * @param Review $review
      * @return \Illuminate\Http\RedirectResponse
      */
     public function deleteReview(Review $review)
@@ -337,8 +333,8 @@ public function updateReservation(Request $request, $id)
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -363,7 +359,7 @@ public function updateReservation(Request $request, $id)
         // Sort options
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-        
+
         if ($sortBy === 'total_spend') {
             $query->orderBy('orders_sum_total_amount', $sortOrder);
         } elseif ($sortBy === 'total_orders') {
@@ -375,7 +371,7 @@ public function updateReservation(Request $request, $id)
         }
 
         $customers = $query->paginate(20)->withQueryString();
-        
+
         // Format the data for display
         $customers->getCollection()->transform(function ($customer) {
             return [
@@ -390,10 +386,10 @@ public function updateReservation(Request $request, $id)
                 'total_reviews' => (int) ($customer->reviews_count ?? 0),
             ];
         });
-        
+
         return Inertia::render('Admin/Customers', [
             'customers' => $customers,
-            'filters' => $request->only(['search', 'date_from', 'date_to', 'min_spend', 'max_spend', 'sort_by', 'sort_order'])
+            'filters' => $request->only(['search', 'date_from', 'date_to', 'min_spend', 'max_spend', 'sort_by', 'sort_order']),
         ]);
     }
 }

@@ -23,11 +23,12 @@ export default function ConfirmPassword() {
     };
 
     return (
-        <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
-        >
+        <AuthLayout>
             <Head title="Confirm password" />
+
+            <div className="mb-4 text-sm text-gray-600">
+                This is a secure area of the application. Please confirm your password before continuing.
+            </div>
 
             <form onSubmit={submit}>
                 <div className="space-y-6">

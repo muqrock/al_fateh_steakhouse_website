@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Hash;
-use Inertia\Inertia;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Inertia\Inertia;
 
 class AdminSessionController extends Controller
 {
@@ -32,7 +32,7 @@ class AdminSessionController extends Controller
         // Find the first user with role 'admin'
         $admin = User::where('role', 'admin')->first();
 
-        if (!$admin || !Hash::check($request->password, $admin->password)) {
+        if (! $admin || ! Hash::check($request->password, $admin->password)) {
             return back()->withErrors(['password' => 'Invalid admin password.']);
         }
 
@@ -50,20 +50,20 @@ class AdminSessionController extends Controller
     {
         // Get the current user before logout
         $currentUser = Auth::user();
-        
+
         // Only logout if current user is an admin
         if ($currentUser && $currentUser->role === 'admin') {
             Auth::logout();
-            
+
             // Clear all session data
             $request->session()->flush();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            
+
             // Clear any cached user data
             $request->session()->forget('auth');
         }
-        
+
         return redirect('/admin/login');
     }
 }

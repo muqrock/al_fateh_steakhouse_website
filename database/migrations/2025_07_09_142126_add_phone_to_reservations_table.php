@@ -9,18 +9,29 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-public function up()
-{
-    Schema::table('reservations', function (Blueprint $table) {
-        $table->string('phone')->nullable()->after('email');
-    });
-}
+    public function up()
+    {
+        if (! Schema::hasTable('reservations')) {
+            return;
+        }
 
-public function down()
-{
-    Schema::table('reservations', function (Blueprint $table) {
-        $table->dropColumn('phone');
-    });
-}
+        Schema::table('reservations', function (Blueprint $table) {
+            if (! Schema::hasColumn('reservations', 'phone')) {
+                $table->string('phone')->nullable()->after('email');
+            }
+        });
+    }
 
+    public function down()
+    {
+        if (! Schema::hasTable('reservations')) {
+            return;
+        }
+
+        Schema::table('reservations', function (Blueprint $table) {
+            if (Schema::hasColumn('reservations', 'phone')) {
+                $table->dropColumn('phone');
+            }
+        });
+    }
 };

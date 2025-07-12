@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasColumn('users', 'role')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->string('role')->default('customer')->after('password');
-            });
-        }
+        Schema::create('password_resets', function (Blueprint $table) {
+            $table->string('email')->index();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
     }
 
     /**
@@ -23,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        Schema::dropIfExists('password_resets');
     }
 };
