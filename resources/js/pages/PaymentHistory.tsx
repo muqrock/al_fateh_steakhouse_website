@@ -106,7 +106,7 @@ export default function PaymentHistory() {
             currentPage="payment-history"
             transparentNav={true}
             fullHeight={true}
-            backgroundImage="/images/steak.jpg"
+            backgroundImage="https://scontent.fkul10-1.fna.fbcdn.net/v/t39.30808-6/476230274_1100222745136044_3839657411461461860_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=INAOvrBJURcQ7kNvwFxCeGJ&_nc_oc=AdkYLXbJQzzmvyQ9Y7Qvg1Pe4NQmLhAzaRlEKQq5ZmzE5ZsUM62nL8ZmsNpPLBdPdIk&_nc_zt=23&_nc_ht=scontent.fkul10-1.fna&_nc_gid=_C_omzsEdP-7SWhCxo74iA&oh=00_AfQLE4CnB_ye_kmRDrOQ6iVIfRm--hn38zPJekVW8wjrFQ&oe=6877D704"
             title="Payment History"
         >
             <div className="relative z-10 mx-auto max-w-4xl px-6 py-10">
