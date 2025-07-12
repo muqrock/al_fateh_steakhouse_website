@@ -37,6 +37,7 @@ export default function OrderPage() {
   const [orderId, setOrderId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [countdown, setCountdown] = useState(5);
 
   // Check if user is logged in as customer
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
@@ -46,6 +47,30 @@ export default function OrderPage() {
       router.visit('/login');
     }
   }, [isCustomerLoggedIn]);
+
+  // Countdown timer effect for payment success redirect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (paymentSuccess && countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            // When countdown reaches 0, redirect to menu page
+            router.visit('/menu');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [paymentSuccess, countdown]);
 
   // Don't render page content if not a logged-in customer
   if (!isCustomerLoggedIn) {
@@ -110,11 +135,7 @@ export default function OrderPage() {
       if (data.success) {
         setOrderId(data.order_id);
         setPaymentSuccess(true);
-        
-        // Redirect to menu page after 5 seconds
-        setTimeout(() => {
-          router.visit('/menu');
-        }, 5000);
+        setCountdown(5); // Reset countdown to 5 seconds
       } else {
         alert('Order failed. Please try again.');
       }
@@ -265,53 +286,55 @@ export default function OrderPage() {
         {!confirming ? (
           <>
             {Object.keys(getFilteredMenu()).length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 min-h-[400px] flex items-center justify-center transition-all duration-300 ease-in-out">
                 <div className="bg-black/80 rounded-xl p-8 border border-yellow-400 shadow-lg">
                   <h3 className="text-xl font-bold text-white mb-2">No items found</h3>
                   <p className="text-gray-300">Try adjusting your search or filter options.</p>
                 </div>
               </div>
             ) : (
-              Object.entries(getFilteredMenu()).map(([category, items]) => (
-              <section key={category} className="mb-10">
-                <h2 className="text-xl font-bold mb-4 border-b pb-2 border-yellow-400 text-white drop-shadow-lg">{category}</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {items.map((item, idx) => {
-                    const inCart = cart.find(ci => ci.name === item.name);
-                    return (
-                      <div key={idx} className="bg-black/80 backdrop-blur-sm rounded-lg shadow-xl border border-yellow-400 p-4 relative text-white">
-                        <img
-                          src={item.image}
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/333?text=Image';
-                          }}
-                          alt={item.name}
-                          className="w-full h-32 object-cover rounded mb-2"
-                        />
-                        <h3 className="font-semibold text-lg text-yellow-400">{item.name}</h3>
-                        <p className="text-sm text-gray-300">RM {Number(item.price).toFixed(2)}</p>
+              <div className="min-h-[600px] transition-all duration-300 ease-in-out">
+                {Object.entries(getFilteredMenu()).map(([category, items]) => (
+                <section key={category} className="mb-10 transition-all duration-300 ease-in-out">
+                  <h2 className="text-xl font-bold mb-4 border-b pb-2 border-yellow-400 text-white drop-shadow-lg">{category}</h2>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((item, idx) => {
+                      const inCart = cart.find(ci => ci.name === item.name);
+                      return (
+                        <div key={idx} className="bg-black/80 backdrop-blur-sm rounded-lg shadow-xl border border-yellow-400 p-4 relative text-white">
+                          <img
+                            src={item.image}
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://placehold.co/400x300/e2e8f0/333?text=Image';
+                            }}
+                            alt={item.name}
+                            className="w-full h-32 object-cover rounded mb-2"
+                          />
+                          <h3 className="font-semibold text-lg text-yellow-400">{item.name}</h3>
+                          <p className="text-sm text-gray-300">RM {Number(item.price).toFixed(2)}</p>
 
 
-                        {inCart ? (
-                          <div className="flex items-center justify-between mt-2">
-                            <button onClick={() => decrement(item.name)} className="bg-red-500 text-white px-3 py-1 rounded font-bold">-</button>
-                            <span className="font-semibold text-lg">{inCart.quantity}</span>
-                            <button onClick={() => increment(item.name)} className="bg-green-500 text-white px-3 py-1 rounded font-bold">+</button>
-                          </div>
-                        ) : (
-                          <button
-                            className="mt-3 w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 rounded transition-colors duration-300"
-                            onClick={() => addToCart(item)}
-                          >
-                            Add to Cart
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ))
+                          {inCart ? (
+                            <div className="flex items-center justify-between mt-2">
+                              <button onClick={() => decrement(item.name)} className="bg-red-500 text-white px-3 py-1 rounded font-bold">-</button>
+                              <span className="font-semibold text-lg">{inCart.quantity}</span>
+                              <button onClick={() => increment(item.name)} className="bg-green-500 text-white px-3 py-1 rounded font-bold">+</button>
+                            </div>
+                          ) : (
+                            <button
+                              className="mt-3 w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 rounded transition-colors duration-300"
+                              onClick={() => addToCart(item)}
+                            >
+                              Add to Cart
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
+              </div>
             )}
 
             {cart.length > 0 && (
@@ -392,7 +415,13 @@ export default function OrderPage() {
 
             <div className="text-gray-300">
               <p className="mb-2">Your order has been confirmed and will be prepared shortly.</p>
-              <p className="text-sm">Redirecting to menu page in 5 seconds...</p>
+              <p className="text-sm flex items-center justify-center gap-2">
+                Redirecting to menu page in 
+                <span className="text-yellow-400 font-bold text-lg">
+                  {countdown}
+                </span> 
+                second{countdown !== 1 ? 's' : ''}...
+              </p>
             </div>
           </div>
         ) : (

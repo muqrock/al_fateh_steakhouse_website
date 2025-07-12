@@ -1,6 +1,7 @@
-import React, { useState, ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { useForm, usePage, router } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
+import Swal from 'sweetalert2';
 
 interface AuthUser {
   name: string;
@@ -50,7 +51,6 @@ const InputIcon: React.FC<InputIconProps> = ({ children }) => (
 
 export default function Reservation() {
   const { auth } = usePage<PageProps>().props;
-  const [submitted, setSubmitted] = useState(false);
   const userReservation = auth?.reservation;
 
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
@@ -92,6 +92,31 @@ export default function Reservation() {
     guests: 1,
   });
 
+  // Custom validation for reservation time
+  const validateReservationTime = (time: string) => {
+    if (!time) return '';
+    
+    const [hours, minutes] = time.split(':').map(Number);
+    const timeIn24Hour = hours * 100 + minutes;
+    
+    // 3:00 PM = 1500, 11:00 PM = 2300
+    if (timeIn24Hour < 1500 || timeIn24Hour > 2300) {
+      return 'Reservation time must be between 3:00 PM and 11:00 PM';
+    }
+    
+    return '';
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = e.target.value;
+    setData('reservation_time', time);
+    
+    // Set custom validation message
+    const timeInput = e.target;
+    const validationMessage = validateReservationTime(time);
+    timeInput.setCustomValidity(validationMessage);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isCustomerLoggedIn) {
@@ -101,9 +126,25 @@ export default function Reservation() {
 
     post(route('reservation.store'), {
       onSuccess: () => {
-        setSubmitted(true);
+        Swal.fire({
+          title: '🎉 Reservation Confirmed!',
+          text: 'Thank you for your reservation! We look forward to serving you at Al-Fateh Steak House.',
+          icon: 'success',
+          showConfirmButton: true,
+          confirmButtonText: 'Perfect!',
+          allowEscapeKey: true,
+          allowOutsideClick: true,
+          draggable: true,
+          background: '#fff5f5',
+          color: '#9a3412',
+          confirmButtonColor: '#f97316',
+          customClass: {
+            popup: 'border-2 border-orange-200 shadow-2xl',
+            title: 'text-orange-700 font-bold',
+            confirmButton: 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0 rounded-lg px-6 py-3 font-semibold shadow-lg transform hover:scale-105 transition-all duration-200'
+          }
+        });
         reset('phone', 'reservation_date', 'reservation_time', 'guests');
-        setTimeout(() => setSubmitted(false), 5000);
       },
     });
   };
@@ -123,13 +164,6 @@ export default function Reservation() {
             <h2 className="text-3xl font-bold text-orange-900 mb-6 underline text-center drop-shadow">
               Table Reservation
             </h2>
-
-            {submitted && (
-              <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md" role="alert">
-                <p className="font-bold">✅ Reservation Submitted Successfully!</p>
-                <p>We look forward to seeing you.</p>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -221,7 +255,7 @@ export default function Reservation() {
                     id="reservation_time"
                     type="time"
                     value={data.reservation_time}
-                    onChange={(e) => setData('reservation_time', e.target.value)}
+                    onChange={handleTimeChange}
                     required
                     className="block w-full rounded-md border-orange-200 bg-white/90 text-orange-800 pl-10 py-3 focus:border-orange-400 focus:ring-orange-400"
                   />

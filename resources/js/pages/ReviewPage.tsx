@@ -16,9 +16,12 @@ type Review = {
   };
   admin_replied_at?: string;
   created_at: string;
+  updated_at?: string;
+  user_id?: number;
 };
 
 interface AuthUser {
+  id: number;
   name: string;
   email: string;
   role: string;
@@ -41,15 +44,108 @@ export default function ReviewPage() {
     image_url: '',
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+  const [widgetLoaded, setWidgetLoaded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 5;
+  const [editingReview, setEditingReview] = useState<number | null>(null);
+  const [editData, setEditData] = useState({ comment: '', rating: 0 });
 
   // Check if user is logged in as customer
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
 
+  // Pagination logic for customer reviews
+  const filteredReviews = reviews.filter(review => filterRating === 0 || review.rating === filterRating);
+  const totalPages = Math.ceil(filteredReviews.length / reviewsPerPage);
+  const startIndex = (currentPage - 1) * reviewsPerPage;
+  const endIndex = startIndex + reviewsPerPage;
+  const currentReviews = filteredReviews.slice(startIndex, endIndex);
+
+  // Reset to first page when filter changes
+  const handleFilterChange = (rating: number) => {
+    setFilterRating(rating);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    
+    // Use setTimeout to ensure DOM has updated with new page content
+    setTimeout(() => {
+      // Scroll to top of reviews section when page changes
+      const reviewsSection = document.querySelector('#customer-reviews-section');
+      if (reviewsSection) {
+        const headerOffset = 120; // Increased offset for better positioning
+        const elementPosition = reviewsSection.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      } else {
+        // Fallback: scroll to a reasonable position if section not found
+        window.scrollTo({
+          top: 400,
+          behavior: 'smooth'
+        });
+      }
+    }, 100); // Short delay to ensure DOM update
+  };
+
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://static.elfsight.com/platform/platform.js";
+    // Load Elfsight script for Google Reviews widget
+    const script = document.createElement('script');
+    script.src = 'https://static.elfsight.com/platform/platform.js';
     script.async = true;
-    document.body.appendChild(script);
+    document.head.appendChild(script);
+
+    // Set up widget detection with multiple checks
+    const checkWidgetLoaded = () => {
+      const elfsightWidget = document.querySelector('.elfsight-app-074e2495-6a8d-45f6-9718-9e042e15f12a');
+      
+      if (elfsightWidget) {
+        // Check if widget has actual content (not just the empty div)
+        const hasContent = elfsightWidget.children.length > 0 || 
+                          elfsightWidget.innerHTML.trim() !== '' ||
+                          elfsightWidget.querySelector('iframe') !== null ||
+                          elfsightWidget.querySelector('[data-elfsight-app-lazy]') === null; // Widget has been processed
+        
+        if (hasContent) {
+          setWidgetLoaded(true);
+          setShowFallback(false);
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Check immediately in case widget loads very fast
+    setTimeout(() => checkWidgetLoaded(), 1000);
+
+    // Set up fallback detection after widget load attempt
+    const fallbackTimer = setTimeout(() => {
+      if (!checkWidgetLoaded()) {
+        setShowFallback(true);
+      }
+    }, 8000); // Increased to 8 seconds to give more time
+
+    // Also check periodically in case widget loads slowly
+    const intervalCheck = setInterval(() => {
+      if (checkWidgetLoaded()) {
+        clearInterval(intervalCheck);
+      }
+    }, 2000);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      clearInterval(intervalCheck);
+      // Clean up script on unmount
+      const existingScript = document.querySelector('script[src="https://static.elfsight.com/platform/platform.js"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,16 +157,64 @@ export default function ReviewPage() {
       return;
     }
     
-    // Validation: require rating and comment
-    if (!data.rating || !data.comment.trim()) {
+    // Specific validation with scroll to error
+    if (!data.rating) {
       Swal.fire({
-        title: 'Please complete the form!',
-        text: 'You must provide a rating and write a review before submitting.',
+        title: 'Rating Required!',
+        text: 'Please select a rating (1-5 stars) before submitting your review.',
         icon: 'error',
         showConfirmButton: true,
         confirmButtonColor: '#f97316',
         confirmButtonText: 'OK',
-        draggable: true
+        draggable: true,
+        background: '#fff5f5',
+        color: '#9a3412',
+        customClass: {
+          popup: 'border-2 border-orange-200 shadow-2xl',
+          title: 'text-orange-700 font-bold'
+        }
+      }).then(() => {
+        // Scroll to rating section
+        const ratingElement = document.querySelector('[data-field="rating"]');
+        if (ratingElement) {
+          ratingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Add highlight effect
+          ratingElement.classList.add('animate-pulse', 'ring-2', 'ring-red-500');
+          setTimeout(() => {
+            ratingElement.classList.remove('animate-pulse', 'ring-2', 'ring-red-500');
+          }, 3000);
+        }
+      });
+      return;
+    }
+    
+    if (!data.comment.trim()) {
+      Swal.fire({
+        title: 'Review Required!',
+        text: 'Please write your review before submitting.',
+        icon: 'error',
+        showConfirmButton: true,
+        confirmButtonColor: '#f97316',
+        confirmButtonText: 'OK',
+        draggable: true,
+        background: '#fff5f5',
+        color: '#9a3412',
+        customClass: {
+          popup: 'border-2 border-orange-200 shadow-2xl',
+          title: 'text-orange-700 font-bold'
+        }
+      }).then(() => {
+        // Scroll to comment section and focus
+        const commentElement = document.querySelector('[data-field="comment"]') as HTMLTextAreaElement;
+        if (commentElement) {
+          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          commentElement.focus();
+          // Add highlight effect
+          commentElement.classList.add('animate-pulse', 'ring-2', 'ring-red-500');
+          setTimeout(() => {
+            commentElement.classList.remove('animate-pulse', 'ring-2', 'ring-red-500');
+          }, 3000);
+        }
       });
       return;
     }
@@ -80,14 +224,160 @@ export default function ReviewPage() {
       onSuccess: () => {
         reset();
         Swal.fire({
-          title: 'Review added successfully!',
+          title: 'Review submitted successfully!',
+          text: 'Thank you for sharing your experience with us!',
           icon: 'success',
-          showConfirmButton: false,
-          timer: 2000,
-          draggable: true
+          showConfirmButton: true,
+          confirmButtonText: 'Wonderful!',
+          confirmButtonColor: '#f97316',
+          timer: 3000,
+          background: '#fff5f5',
+          color: '#9a3412',
+          customClass: {
+            popup: 'border-2 border-orange-200 shadow-2xl',
+            title: 'text-orange-700 font-bold'
+          }
         });
       },
     });
+  };
+
+  const handleEditStart = (review: Review) => {
+    setEditingReview(review.id);
+    setEditData({
+      comment: review.comment,
+      rating: review.rating
+    });
+  };
+
+  const handleEditCancel = () => {
+    setEditingReview(null);
+    setEditData({ comment: '', rating: 0 });
+  };
+
+  const handleEditSubmit = (reviewId: number) => {
+    // Validation: require rating and comment
+    if (!editData.rating || !editData.comment.trim()) {
+      Swal.fire({
+        title: 'Please complete the form!',
+        text: 'You must provide a rating and write a review before updating.',
+        icon: 'error',
+        showConfirmButton: true,
+        confirmButtonColor: '#f97316',
+        confirmButtonText: 'OK',
+        draggable: true,
+        background: '#fff5f5',
+        color: '#9a3412',
+        customClass: {
+          popup: 'border-2 border-orange-200 shadow-2xl',
+          title: 'text-orange-700 font-bold'
+        }
+      });
+      return;
+    }
+
+    router.put(`/review/${reviewId}`, {
+      comment: editData.comment,
+      rating: editData.rating
+    }, {
+      onSuccess: () => {
+        setEditingReview(null);
+        setEditData({ comment: '', rating: 0 });
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Your review has been updated!",
+          text: "Thank you for keeping your review up to date.",
+          showConfirmButton: true,
+          confirmButtonText: "Great!",
+          confirmButtonColor: '#f97316',
+          timer: 3000,
+          background: '#fff5f5',
+          color: '#9a3412',
+          customClass: {
+            popup: 'border-2 border-orange-200 shadow-2xl',
+            title: 'text-orange-700 font-bold'
+          }
+        });
+      },
+      onError: (errors) => {
+        Swal.fire({
+          title: 'Error updating review!',
+          text: 'There was an error updating your review. Please try again.',
+          icon: 'error',
+          showConfirmButton: true,
+          confirmButtonColor: '#f97316',
+          confirmButtonText: 'OK',
+          draggable: true,
+          background: '#fff5f5',
+          color: '#9a3412',
+          customClass: {
+            popup: 'border-2 border-orange-200 shadow-2xl',
+            title: 'text-orange-700 font-bold'
+          }
+        });
+      }
+    });
+  };
+
+  const handleDeleteReview = (reviewId: number) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this action!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#f97316",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      background: '#fff5f5',
+      color: '#9a3412',
+      customClass: {
+        popup: 'border-2 border-orange-200 shadow-2xl',
+        title: 'text-orange-700 font-bold'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        router.delete(`/review/${reviewId}`, {
+          onSuccess: () => {
+            Swal.fire({
+              title: "Deleted!",
+              text: "Your review has been successfully deleted.",
+              icon: "success",
+              showConfirmButton: true,
+              confirmButtonText: "OK",
+              confirmButtonColor: '#f97316',
+              background: '#fff5f5',
+              color: '#9a3412',
+              customClass: {
+                popup: 'border-2 border-orange-200 shadow-2xl',
+                title: 'text-orange-700 font-bold'
+              }
+            });
+          },
+          onError: () => {
+            Swal.fire({
+              title: "Error!",
+              text: "There was an error deleting your review. Please try again.",
+              icon: "error",
+              showConfirmButton: true,
+              confirmButtonText: "OK",
+              confirmButtonColor: '#f97316',
+              background: '#fff5f5',
+              color: '#9a3412',
+              customClass: {
+                popup: 'border-2 border-orange-200 shadow-2xl',
+                title: 'text-orange-700 font-bold'
+              }
+            });
+          }
+        });
+      }
+    });
+  };
+
+  const canEditReview = (review: Review) => {
+    return isCustomerLoggedIn && auth?.user && review.user_id === auth.user.id;
   };
 
   const renderStars = (count: number) =>
@@ -105,29 +395,119 @@ export default function ReviewPage() {
       backgroundImage="https://scontent.fpen1-1.fna.fbcdn.net/v/t39.30808-6/476130548_1099553275202991_5856351097499968454_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=7zIdn5NL0P8Q7kNvwF4xaZV&_nc_oc=AdlT-fK5XpJft_S5xh6hcOykjQJwECXrznIYR0hQyG91OMTrPGgnG4Lmx0HjeEeo8XowjrbFkyJKL83cwd4XKZDr&_nc_zt=23&_nc_ht=scontent.fpen1-1.fna&_nc_gid=mWcX3BG_acdFj0kwlEX7yA&oh=00_AfRIDcvITPtc1IUe_bYsJJQWSEwvtMyVX1Tk8j33lDzhXQ&oe=68771A8D"
       title="Reviews"
     >
-      <main className="max-w-4xl mx-auto px-6 py-10 bg-gradient-to-br from-orange-50 to-amber-100/95 backdrop-blur-sm rounded-xl shadow-2xl my-10 relative z-10 border border-orange-300/70">
+      <main className="max-w-4xl mx-auto px-6 py-10 my-10 relative z-10">
       {/* Success Toast Popup removed, now handled by SweetAlert2 */}
 
       {/* Header */}
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-extrabold text-orange-900">Customer Reviews</h1>
-        <p className="text-orange-700 mt-2">See what our guests are saying about Al-Fateh Steak House.</p>
+        <h1 className="text-4xl font-extrabold text-white">Customer Reviews</h1>
+        <p className="text-white/90 mt-2">See what our guests are saying about Al-Fateh Steak House.</p>
       </div>
 
-      {/* Elfsight Google Reviews Widget */}
+      {/* Google Reviews Widget*/}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-orange-900 mb-4 text-center">Google Reviews</h2>
-        <div className="elfsight-app-bd736aba-8451-48e9-b16b-8af329482e30" data-elfsight-app-lazy></div>
+        
+        <div className="mb-6">
+          {/* Elfsight Google Reviews Widget */}
+          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+            {/* Elfsight Widget Container */}
+            <div className="elfsight-widget-container">
+              <div className="elfsight-app-074e2495-6a8d-45f6-9718-9e042e15f12a" data-elfsight-app-lazy></div>
+              
+              {/* Loading Message */}
+              {!widgetLoaded && !showFallback && (
+                <div className="text-center py-8">
+                  <div className="inline-flex items-center px-4 py-2 bg-blue-50 rounded-lg">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-blue-600 font-medium">Loading Google Reviews...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Fallback Message when Elfsight widget fails or expires */}
+            {showFallback && (
+              <div className="text-center py-8">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 max-w-2xl mx-auto">
+                  <div className="flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-amber-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <h4 className="text-xl font-bold text-amber-800">Google Reviews Widget</h4>
+                  </div>
+                  <p className="text-amber-700 mb-4 leading-relaxed">
+                    We're currently using a trial version of our Google Reviews widget service. 
+                    The widget may temporarily be unavailable due to subscription limitations.
+                  </p>
+                  <div className="bg-white rounded-lg p-4 mb-4 border border-amber-200">
+                    <div className="text-green-600 text-lg font-semibold mb-2">
+                      ⭐⭐⭐⭐⭐ 4.8 out of 5 stars
+                    </div>
+                    <p className="text-gray-600 text-sm">
+                      Based on our recent Google My Business reviews
+                    </p>
+                  </div>
+                  <div className="text-amber-600 text-sm mb-4">
+                    You can still view all our authentic Google reviews and leave your own by clicking the button below.
+                  </div>
+                  <a 
+                    href="https://www.google.com/maps/place/Al+Fateh+Vision+Steak+House/@3.6736806,101.5315833,16.85z/data=!4m6!3m5!1s0x31cb880405581985:0x316cf03690f76bb!8m2!3d3.6736743!4d101.5313491!16s%2Fg%2F11c6zxlyjx?entry=ttu&g_ep=EgoyMDI1MDYyMy4yIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    View & Leave Google Reviews
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* Customer Reviews from Database */}
         {reviews && reviews.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-orange-900 mb-6 text-center">Customer Reviews</h2>
+          <section id="customer-reviews-section" className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 text-center">User Reviews</h2>
+            
+            {/* Reviews Count */}
+            <div className="text-center mb-4">
+              <span className="text-white/80 text-sm">
+                Showing {currentReviews.length} of {filteredReviews.length} reviews
+                {filterRating > 0 && ` (${filterRating} star${filterRating > 1 ? 's' : ''})`}
+              </span>
+            </div>
+
+            {/* Rating Filter */}
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center gap-2 bg-white/90 rounded-lg p-3 border-2 border-orange-400 shadow">
+                <span className="text-orange-900 text-sm font-semibold">Filter by rating:</span>
+                <button
+                  onClick={() => handleFilterChange(0)}
+                  className={`px-3 py-1 rounded text-sm font-bold transition-colors duration-150 ${filterRating === 0 ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'}`}
+                >
+                  All
+                </button>
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => handleFilterChange(rating)}
+                    className={`px-2 py-1 rounded text-sm font-bold transition-colors duration-150 ${filterRating === rating ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'}`}
+                  >
+                    {rating}★
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-6">
-              {reviews
-                .filter(review => filterRating === 0 || review.rating === filterRating)
-                .map((review) => (
+              {currentReviews.map((review) => (
                 <div key={review.id} className="bg-white/90 border-2 border-orange-400 rounded-xl p-6 shadow-xl">
                   <div className="flex items-start gap-4">
                     <img
@@ -140,15 +520,82 @@ export default function ReviewPage() {
                         <div>
                           <h3 className="font-bold text-orange-800">{review.name}</h3>
                           <div className="flex items-center gap-2">
-                            <div className="flex">{renderStars(review.rating)}</div>
-                            <span className="text-orange-600 text-sm">({review.rating}/5)</span>
+                            {editingReview === review.id ? (
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <span
+                                    key={star}
+                                    onClick={() => setEditData(prev => ({ ...prev, rating: star }))}
+                                    className={`text-lg cursor-pointer ${editData.rating >= star ? 'text-orange-500' : 'text-orange-200'} hover:scale-110 transition`}
+                                  >
+                                    ★
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex">{renderStars(review.rating)}</div>
+                                <span className="text-orange-600 text-sm">({review.rating}/5)</span>
+                              </>
+                            )}
                           </div>
                         </div>
-                        <span className="text-orange-500 text-xs font-semibold">
-                          {new Date(review.created_at).toLocaleDateString('en-GB')}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-orange-500 text-xs font-semibold block">
+                            {new Date(review.created_at).toLocaleDateString('en-GB')}
+                          </span>
+                          {review.updated_at && review.updated_at !== review.created_at && (
+                            <span className="text-orange-400 text-xs italic">
+                              Edited: {new Date(review.updated_at).toLocaleDateString('en-GB')}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-orange-900 mb-3 italic font-medium">"{review.comment}"</p>
+                      
+                      {editingReview === review.id ? (
+                        <div className="mb-3">
+                          <textarea
+                            value={editData.comment}
+                            onChange={(e) => setEditData(prev => ({ ...prev, comment: e.target.value }))}
+                            className="w-full px-3 py-2 border-2 border-orange-200 rounded-md bg-white text-orange-800 shadow-sm focus:border-orange-400 focus:ring-orange-400"
+                            rows={3}
+                            placeholder="Edit your review..."
+                          />
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleEditSubmit(review.id)}
+                              className="px-4 py-1 bg-orange-500 text-white text-sm rounded-md hover:bg-orange-600 transition-colors"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleEditCancel}
+                              className="px-4 py-1 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-600 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReview(review.id)}
+                              className="px-4 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-orange-900 mb-3 italic font-medium">"{review.comment}"</p>
+                          {canEditReview(review) && (
+                            <button
+                              onClick={() => handleEditStart(review)}
+                              className="text-orange-600 text-sm hover:text-orange-800 transition-colors mb-2"
+                            >
+                              ✏️ Edit Review
+                            </button>
+                          )}
+                        </>
+                      )}
+                      
                       {/* Admin Reply */}
                       {review.admin_reply && (
                         <div className="bg-orange-100 border-l-4 border-orange-500 p-4 mt-3 rounded-r-lg">
@@ -170,27 +617,69 @@ export default function ReviewPage() {
                 </div>
               ))}
             </div>
-            {/* Rating Filter */}
-            <div className="flex justify-center mt-6">
-              <div className="flex items-center gap-2 bg-white/90 rounded-lg p-3 border-2 border-orange-400 shadow">
-                <span className="text-orange-900 text-sm font-semibold">Filter by rating:</span>
-                <button
-                  onClick={() => setFilterRating(0)}
-                  className={`px-3 py-1 rounded text-sm font-bold transition-colors duration-150 ${filterRating === 0 ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'}`}
-                >
-                  All
-                </button>
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <button
-                    key={rating}
-                    onClick={() => setFilterRating(rating)}
-                    className={`px-2 py-1 rounded text-sm font-bold transition-colors duration-150 ${filterRating === rating ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-800 hover:bg-orange-200'}`}
-                  >
-                    {rating}★
-                  </button>
-                ))}
+
+            {/* No reviews message when filter returns empty */}
+            {currentReviews.length === 0 && (
+              <div className="text-center py-8">
+                <div className="text-white text-lg font-semibold mb-2">
+                  No reviews found
+                </div>
+                <p className="text-white/70 text-sm">
+                  {filterRating > 0 
+                    ? `No ${filterRating} star reviews available. Try a different rating filter.`
+                    : 'No customer reviews available yet.'
+                  }
+                </p>
               </div>
-            </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-8">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-2 rounded-lg font-medium transition-colors ${
+                      currentPage === 1
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                    }`}
+                  >
+                    ← Previous
+                  </button>
+                  
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 rounded-lg font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-2 rounded-lg font-medium transition-colors ${
+                      currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                    }`}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
@@ -219,7 +708,7 @@ export default function ReviewPage() {
                 />
               </div>
             </div>
-            <div>
+            <div data-field="rating">
               <label className="block text-orange-900 font-semibold mb-1">Your Rating</label>
               <div className="flex gap-2 mt-1 cursor-pointer">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -238,10 +727,11 @@ export default function ReviewPage() {
             <div>
               <label className="block text-orange-900 font-semibold mb-1">Your Review</label>
               <textarea
+                data-field="comment"
                 rows={4}
                 value={data.comment}
                 onChange={e => setData('comment', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-orange-200 rounded-md bg-white/90 text-orange-800 shadow-sm focus:border-orange-400 focus:ring-orange-400"
+                className="w-full px-4 py-3 border-2 border-orange-200 rounded-md bg-white/90 text-orange-800 shadow-sm focus:border-orange-400 focus:ring-orange-400 transition-all duration-300"
                 placeholder="Share your experience..."
                 required
               />

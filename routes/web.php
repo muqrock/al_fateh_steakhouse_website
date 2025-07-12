@@ -71,6 +71,8 @@ Route::middleware(['customer'])->group(function () {
 
     // Customer-only actions
     Route::post('/review', [ReviewController::class, 'store']);
+    Route::put('/review/{review}', [ReviewController::class, 'update'])->name('review.update');
+    Route::delete('/review/{review}', [ReviewController::class, 'destroy'])->name('review.destroy');
     Route::post('/reservation', [ReservationController::class, 'store'])->name('reservation.store');
     Route::post('/order', [\App\Http\Controllers\OrderController::class, 'store'])->name('order.store');
 });
@@ -108,6 +110,9 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/menu/{menu}', [MenuController::class, 'update'])->name('admin.menu.update');
     // ==================== END MENU ROUTES ====================
 });
+
+// Review update route - requires authentication
+Route::put('/review/{id}', [ReviewController::class, 'update'])->middleware('auth');
 
 // Include other route files
 require __DIR__.'/settings.php';
