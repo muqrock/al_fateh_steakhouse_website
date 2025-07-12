@@ -1,22 +1,7 @@
 import React from 'react';
-import { router, usePage } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
 
-interface AuthUser {
-  name: string;
-  email: string;
-  role: string;
-}
-
-interface PageProps {
-  auth: {
-    user?: AuthUser;
-  };
-  [key: string]: any;
-}
-
 export default function AboutPage() {
-  const { auth } = usePage<PageProps>().props;
 
   return (
     <CustomerLayout 

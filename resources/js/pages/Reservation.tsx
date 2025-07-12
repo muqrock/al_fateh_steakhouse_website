@@ -21,7 +21,7 @@ interface PageProps {
     user?: AuthUser;
     reservation?: ReservationData;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface FormFieldProps {
@@ -55,6 +55,15 @@ export default function Reservation() {
 
   const isCustomerLoggedIn = auth?.user && auth.user.role === 'customer';
 
+  const { data, setData, post, processing, errors, reset } = useForm({
+    name: auth?.user?.name || '',
+    email: auth?.user?.email || '',
+    phone: '',
+    reservation_date: '',
+    reservation_time: '',
+    guests: 1,
+  });
+
   // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!isCustomerLoggedIn) {
@@ -82,15 +91,6 @@ export default function Reservation() {
       </CustomerLayout>
     );
   }
-
-  const { data, setData, post, processing, errors, reset } = useForm({
-    name: auth?.user?.name || '',
-    email: auth?.user?.email || '',
-    phone: '',
-    reservation_date: '',
-    reservation_time: '',
-    guests: 1,
-  });
 
   // Custom validation for reservation time
   const validateReservationTime = (time: string) => {

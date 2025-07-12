@@ -22,9 +22,9 @@ interface Review {
 interface PageProps {
   reviews: {
     data: Review[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const AdminReviews: React.FC = () => {

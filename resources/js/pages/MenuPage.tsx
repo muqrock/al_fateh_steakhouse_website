@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePage, router, Link } from '@inertiajs/react';
+import { usePage, Link } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
 
 type MenuItem = {
@@ -7,7 +7,7 @@ type MenuItem = {
   price: number;
   image: string;
   description?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type PageProps = {
@@ -34,7 +34,13 @@ const MenuItem = ({ imageUrl, name, price, onClick }: MenuItemProps & { onClick?
     tabIndex={0}
     role="button"
     aria-label={`View details for ${name}`}
-    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onClick && onClick(); }}
+    onKeyDown={e => { 
+      if (e.key === 'Enter' || e.key === ' ') { 
+        if (onClick) {
+          onClick(); 
+        }
+      } 
+    }}
   >
     <img
       src={imageUrl}

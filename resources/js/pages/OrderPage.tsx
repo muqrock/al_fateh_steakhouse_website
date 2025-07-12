@@ -21,7 +21,7 @@ interface PageProps {
   auth: {
     user?: AuthUser;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface CartItem extends MenuItem {
@@ -148,7 +148,7 @@ export default function OrderPage() {
   const getCartGrouped = () => {
     const grouped: { [category: string]: CartItem[] } = {};
     for (const item of cart) {
-      const category = Object.entries(menu).find(([_, items]) =>
+      const category = Object.entries(menu).find(([, items]) =>
         items.some(i => i.name === item.name)
       )?.[0] || 'Uncategorized';
 

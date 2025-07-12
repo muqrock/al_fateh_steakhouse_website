@@ -38,12 +38,12 @@ interface PageProps {
 export default function ReviewPage() {
   const { reviews, auth } = usePage<PageProps>().props;
   const [filterRating, setFilterRating] = useState(0);
-  const { data, setData, post, processing, reset, errors } = useForm({
+   
+  const { data, setData, post, processing, reset } = useForm({
     comment: '',
     rating: 0,
     image_url: '',
   });
-  const [showSuccess, setShowSuccess] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const [widgetLoaded, setWidgetLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -300,7 +300,7 @@ export default function ReviewPage() {
           }
         });
       },
-      onError: (errors) => {
+      onError: () => {
         Swal.fire({
           title: 'Error updating review!',
           text: 'There was an error updating your review. Please try again.',
@@ -444,7 +444,7 @@ export default function ReviewPage() {
                   </p>
                   <div className="bg-white rounded-lg p-4 mb-4 border border-amber-200">
                     <div className="text-green-600 text-lg font-semibold mb-2">
-                      ⭐⭐⭐⭐⭐ 4.8 out of 5 stars
+                      ⭐⭐⭐⭐⭐ 4.0 out of 5 stars
                     </div>
                     <p className="text-gray-600 text-sm">
                       Based on our recent Google My Business reviews
@@ -722,7 +722,6 @@ export default function ReviewPage() {
                   </span>
                 ))}
               </div>
-              {errors.rating && <p className="text-red-500 text-sm mt-1">{errors.rating}</p>}
             </div>
             <div>
               <label className="block text-orange-900 font-semibold mb-1">Your Review</label>
@@ -735,7 +734,6 @@ export default function ReviewPage() {
                 placeholder="Share your experience..."
                 required
               />
-              {errors.comment && <p className="text-red-500 text-sm mt-1">{errors.comment}</p>}
             </div>
             <button
               type="submit"

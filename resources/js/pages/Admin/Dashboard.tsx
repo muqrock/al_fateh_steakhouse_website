@@ -47,7 +47,7 @@ interface Stats {
 
 interface PageProps {
   stats: Stats;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const AdminDashboard: React.FC = () => {

@@ -11,7 +11,7 @@ interface PageProps {
   auth: {
     user?: AuthUser;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface CustomerNavbarProps {
@@ -45,14 +45,6 @@ const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ transparent = false, cu
     router.post('/logout', {}, {
       onSuccess: () => router.visit('/')
     });
-  };
-
-  const handleAuthAction = (requiresAuth: boolean, destination: string) => {
-    if (requiresAuth && !isCustomerLoggedIn) {
-      router.visit('/login');
-    } else {
-      router.visit(destination);
-    }
   };
 
   const navStyle = transparent 

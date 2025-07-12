@@ -10,7 +10,7 @@ interface UserData {
 
 interface PageProps {
   csrf_token: string;
-  [key: string]: any; // Added index signature
+  [key: string]: unknown; // Added index signature
 }
 
 const LoginPage: React.FC = () => {

@@ -7,7 +7,7 @@ interface Order {
   total_amount: number;
   status: string;
   payment_method?: string;
-  items: any[];
+  items: unknown[];
   notes?: string;
   created_at: string;
 }
@@ -22,9 +22,9 @@ interface AuthUser {
 interface PageProps {
   orders: {
     data: Order[];
-    links: any[];
+    links: unknown[];
     total: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   filters: {
     search?: string;
@@ -44,7 +44,7 @@ interface PageProps {
 }
 
 export default function PaymentHistory() {
-  const { orders = { data: [], links: [], total: 0 }, filters = {}, auth } = usePage<PageProps>().props;
+  const { orders = { data: [], links: [], total: 0 }, filters = {} } = usePage<PageProps>().props;
   
   // State for filters
   const [searchTerm, setSearchTerm] = useState(filters.search || '');
@@ -332,12 +332,12 @@ export default function PaymentHistory() {
                     <div className="border-t border-gray-200 pt-4">
                       <h4 className="font-medium text-indigo-700 mb-2">Items:</h4>
                       <div className="space-y-2">
-                        {order.items.map((item: any, index: number) => (
+                        {(order.items as { quantity: number; name: string; price: string | number }[]).map((item, index: number) => (
                           <div key={index} className="flex justify-between items-center text-sm">
                             <span className="text-sky-700">
                               {item.quantity}x {item.name}
                             </span>
-                            <span className="text-sky-600">RM {parseFloat(item.price).toFixed(2)}</span>
+                            <span className="text-sky-600">RM {parseFloat(String(item.price)).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
@@ -357,7 +357,7 @@ export default function PaymentHistory() {
               {/* Pagination */}
               {orders.links && orders.links.length > 3 && (
                 <div className="flex justify-center mt-6 gap-2">
-                  {orders.links.map((link: any, index: number) => {
+                  {(orders.links as { url: string | null; label: string; active: boolean }[]).map((link, index: number) => {
                     if (link.url === null) {
                       return (
                         <span
@@ -371,7 +371,7 @@ export default function PaymentHistory() {
                     return (
                       <button
                         key={index}
-                        onClick={() => router.visit(link.url)}
+                        onClick={() => link.url && router.visit(link.url)}
                         className={`px-3 py-2 rounded border transition-colors duration-200 ${
                           link.active
                             ? 'bg-indigo-600 text-white border-indigo-600'

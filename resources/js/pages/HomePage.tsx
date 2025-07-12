@@ -2,17 +2,6 @@ import React from 'react';
 import { router } from '@inertiajs/react';
 import CustomerLayout from '@/layouts/CustomerLayout';
 
-interface PageProps {
-  auth: {
-    user?: {
-      name: string;
-      email: string;
-      role: string;
-    };
-  };
-  [key: string]: any;
-}
-
 export default function HomePage() {
   const handleSeeMenu = () => {
     router.visit('/menu'); // Navigates to the menu page

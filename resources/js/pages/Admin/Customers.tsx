@@ -18,8 +18,8 @@ interface PageProps {
   customers: {
     data: Customer[];
     total: number;
-    links: any[];
-    [key: string]: any;
+    links: unknown[];
+    [key: string]: unknown;
   };
   filters: {
     search?: string;
@@ -30,7 +30,7 @@ interface PageProps {
     sort_by?: string;
     sort_order?: string;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const AdminCustomers: React.FC = () => {
@@ -411,7 +411,7 @@ const AdminCustomers: React.FC = () => {
         {/* Pagination */}
         {customers.links && customers.links.length > 3 && (
           <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-            {customers.links.map((link: any, index: number) => {
+            {(customers.links as { url: string | null; label: string; active: boolean }[]).map((link, index: number) => {
               if (link.url === null) {
                 return (
                   <span
@@ -430,7 +430,7 @@ const AdminCustomers: React.FC = () => {
               return (
                 <button
                   key={index}
-                  onClick={() => router.visit(link.url)}
+                  onClick={() => link.url && router.visit(link.url)}
                   style={{
                     padding: '8px 12px',
                     border: '1px solid #d1d5db',

@@ -13,12 +13,12 @@ interface Reservation {
   created_at: string;
   status?: string;
   // special_request field removed
-  [key: string]: any; 
+  [key: string]: unknown; 
 }
 
 interface PageProps {
   reservations: Reservation[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const AdminReservations: React.FC = () => {
