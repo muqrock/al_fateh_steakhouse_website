@@ -5,29 +5,25 @@ WORKDIR /var/www
 RUN apk add --no-cache \
     bash curl git nodejs npm \
     build-base autoconf libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev postgresql-dev oniguruma-dev \
-    nginx supervisor && \
-    rm -rf /var/cache/apk/*
+    nginx supervisor
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install -j$(nproc) pdo pdo_pgsql mbstring exif pcntl bcmath gd zip
 
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Copy all application files including artisan
+# Copy everything early
 COPY . .
 
-# Run composer install
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+# Build PHP deps
+RUN composer install --no-dev --optimize-autoloader
 
-# Install Node dependencies
-RUN npm ci --no-audit --prefer-offline
+# Build Vite assets
+RUN npm install && npm run build && npm cache clean --force
 
-# Build frontend assets
-RUN npm run build && npm cache clean --force
-
-# Ensure required directories exist, then set permissions
-RUN mkdir -p /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
-    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/build
+# Fix permissions
+RUN mkdir -p storage/framework/{cache,data,sessions,views} storage/logs bootstrap/cache public/build && \
+    chown -R www-data:www-data storage bootstrap/cache public/build
 
 COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
