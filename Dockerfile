@@ -1,56 +1,91 @@
-FROM php:8.2-fpm
+# Use official PHP image with FPM and Alpine base (smaller footprint)
+FROM php:8.2-fpm-alpine
 
 WORKDIR /var/www
 
-# Install Node.js 20 (needed for Vite + React)
-RUN apt-get update && apt-get install -y curl gnupg2 \
-    && curl -sL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
+# Install dependencies in a single RUN layer (reduces image size)
+RUN apk add --no-cache --update \
+    # Base packages
+    bash \
+    curl \
+    git \
+    # Node.js 20 (for Vite)
+    nodejs=20.12.2-r0 \
+    npm \
+    yarn \
+    # Build dependencies (removed after compile)
+    build-base \
+    autoconf \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    postgresql-dev \
+    oniguruma-dev \
+    # Runtime dependencies
+    nginx \
+    supervisor \
+    # Cleanup
+    && rm -rf /var/cache/apk/*
 
-# System dependencies
-RUN apt-get install -y \
-    build-essential libpng-dev libonig-dev libxml2-dev zip unzip git \
-    nginx supervisor libpq-dev libjpeg-dev libfreetype6-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Configure PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo \
+    pdo_pgsql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    # Clean build dependencies
+    && apk del build-base autoconf
 
-# PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+# Verify PHP-FPM configuration (for debugging)
+RUN echo "PHP-FPM Config:" && \
+    grep -r "listen =" /etc/php82/php-fpm.d/www.conf || true
 
-# START OF NEW DIAGNOSTIC STEP:
-# ✅ Check PHP-FPM's listen address to diagnose 502 Bad Gateway
-RUN grep -r "listen =" /etc/php/8.2/fpm/pool.d/www.conf || true
-# END OF NEW DIAGNOSTIC STEP
+# Install Composer (multi-stage to reduce image size)
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# ✅ Copy full app first (so artisan exists before composer install)
+# Copy application files (with .dockerignore to exclude unnecessary files)
 COPY . .
 
-# ✅ Install Laravel backend dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Install backend dependencies (no dev dependencies)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-# ✅ Build Vite React frontend
-RUN npm install && npm run build
+# Install frontend dependencies and build
+RUN npm ci --no-audit --prefer-offline && \
+    npm run build && \
+    npm cache clean --force
 
-# START OF PREVIOUS DIAGNOSTIC STEPS (keep these for now):
-# ✅ Confirm vite manifest exists in the right place
-RUN ls -lah /var/www/public/build/.vite
-# ✅ Confirm assets exist inside the assets directory
-RUN ls -lah /var/www/public/build/assets
-# END OF PREVIOUS DIAGNOSTIC STEPS
+# Verify build output
+RUN ls -lah /var/www/public/build && \
+    ls -lah /var/www/public/build/assets
 
-# ✅ Set permissions (important for storage and logs)
-RUN chown -R www-data:www-data /var/www && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Set permissions (optimized for least privilege)
+RUN chown -R www-data:www-data \
+    /var/www/storage \
+    /var/www/bootstrap/cache \
+    /var/www/public/build \
+    && find /var/www/storage -type d -exec chmod 775 {} \; \
+    && find /var/www/storage -type f -exec chmod 664 {} \;
 
-# ✅ Copy server config
-COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
-COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy configurations
+COPY --chown=www-data:www-data \
+    ./docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY --chown=root:root \
+    ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY --chown=root:root \
+    entrypoint.sh /entrypoint.sh
 
-# ✅ Entrypoint
-COPY entrypoint.sh /entrypoint.sh
+# Make entrypoint executable
 RUN chmod +x /entrypoint.sh
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost/healthz || exit 1
 
 EXPOSE 80
 

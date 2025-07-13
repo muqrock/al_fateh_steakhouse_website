@@ -25,12 +25,25 @@ export default defineConfig(({ mode }) => {
                 'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
             },
         },
-        // ✅ Use full APP_URL in production
-        base: mode === 'production' ? `${env.APP_URL}/` : '/',
+        // 🚀 Critical Change for Render deployment
+        base: mode === 'production' ? '/build/' : '/',
         build: {
             manifest: true,
             outDir: 'public/build',
             emptyOutDir: true,
+            assetsDir: 'assets',  // 👈 Added this line
+            rollupOptions: {
+                output: {
+                    assetFileNames: 'assets/[name]-[hash][extname]',
+                    chunkFileNames: 'assets/[name]-[hash].js',
+                    entryFileNames: 'assets/[name]-[hash].js',
+                }
+            }
+        },
+        server: {
+            hmr: {
+                host: env.APP_URL ? new URL(env.APP_URL).hostname : 'localhost',
+            },
         },
     };
 });
