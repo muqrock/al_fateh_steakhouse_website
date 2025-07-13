@@ -32,11 +32,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy project files
 COPY . .
 
-# ✅ Clear caches (important for correct config)
-RUN php artisan config:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache
-
 # ✅ Install Laravel dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# ✅ Clear caches (important for correct config)
+RUN php artisan config:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 # ✅ Install frontend (Vite React) and build assets
 RUN npm install && npm run build
