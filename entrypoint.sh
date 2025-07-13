@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "Creating necessary Laravel directories..."
+echo "Creating necessary Laravel directories (if not already present)..."
+# These mkdir -p commands are still useful here if /var/www is a volume,
+# ensuring directories exist before Laravel tries to write to them.
 mkdir -p \
   /var/www/storage/app/public \
   /var/www/storage/framework/cache/data \
@@ -10,15 +12,18 @@ mkdir -p \
   /var/www/storage/logs \
   /var/www/bootstrap/cache
 
-echo "Setting permissions for storage and cache..."
+# Create log file if it doesn't exist and ensure permissions (important for fresh deployments)
 touch /var/www/storage/logs/laravel.log
-chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+# Permissions are now primarily handled in Dockerfile, but this ensures group writability at runtime
+# (This is a fallback/reinforcement, mainly for volume mounts)
 chmod -R ug+rwX /var/www/storage /var/www/bootstrap/cache
 
 echo "Linking storage directory..."
 php artisan storage:link
 
 echo "Running database migrations..."
+# Use set +e / set -e to allow migration to fail without stopping the entrypoint
 set +e
 php artisan migrate --force
 MIGRATE_EXIT_CODE=$?
@@ -40,9 +45,8 @@ fi
 # php artisan route:cache
 # php artisan view:cache
 
-echo "Setting permissions for Vite build output..."
-chown -R www-data:www-data /var/www/public/build
-chmod -R ug+rwX /var/www/public/build
+# Removed: "Setting permissions for Vite build output..." and associated chown/chmod
+# These are now handled in the Dockerfile during the build phase.
 
 echo "Starting Supervisor..."
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
