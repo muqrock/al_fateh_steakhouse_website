@@ -19,27 +19,26 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
 # --- Composer ---
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# --- Copy only composer files first for caching ---
-COPY composer.json composer.lock ./
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# --- Copy rest of the app ---
+# --- Copy everything before running composer ---
 COPY . .
+
+# --- Run composer install (now artisan file is present!) ---
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # --- Set environment ---
 ENV APP_URL=https://al-fateh-steakhouse-website.onrender.com
 
-# ✅ Build frontend (after full app exists)
+# --- Build frontend assets ---
 RUN npm install && npm run build
 
-# ✅ Set permissions
+# --- Set permissions ---
 RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 
-# ✅ Copy configs
+# --- Copy configs ---
 COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# ✅ Entrypoint
+# --- Entrypoint ---
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
