@@ -39,7 +39,7 @@ RUN mkdir -p /var/www/storage/app/public \
              /var/www/public/build
 
 # Set ownership to 'nginx' user/group (common for Alpine web servers)
-# This will apply to the entire /var/www directory, ensuring consistency
+# We'll set /var/www to nginx:nginx, then specifically ensure 'storage' and 'bootstrap/cache' are writable.
 RUN chown -R nginx:nginx /var/www
 
 # Set general permissions:
@@ -47,8 +47,11 @@ RUN chown -R nginx:nginx /var/www
 # Files: rw for owner, r for group/others (644)
 RUN find /var/www -type d -exec chmod 755 {} + \
     && find /var/www -type f -exec chmod 644 {} + \
-    # Ensure storage/bootstrap/cache are writable by group for web server
-    && chmod -R ug+rwX /var/www/storage /var/www/bootstrap/cache
+    # Ensure storage/bootstrap/cache are writable by the group (and owner)
+    # This is crucial for Laravel to write session, cache, and view files.
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
+# --- END CRITICAL PERMISSION FIXES ---
 # --- END CRITICAL PERMISSION FIXES ---
 
 # Copy Nginx and Supervisor configurations
