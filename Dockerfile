@@ -28,7 +28,8 @@ RUN npm ci --no-audit --prefer-offline
 # Build frontend assets
 RUN npm run build && npm cache clean --force
 
-# --- CRITICAL PERMISSION FIXES (Consolidated and Corrected for Alpine) ---
+# --- CRITICAL PERMISSION FIXES (Trying 'nobody' user and adding diagnostics) ---
+
 # Ensure all necessary runtime directories exist
 RUN mkdir -p /var/www/storage/app/public \
              /var/www/storage/framework/cache/data \
@@ -38,20 +39,29 @@ RUN mkdir -p /var/www/storage/app/public \
              /var/www/bootstrap/cache \
              /var/www/public/build
 
-# Set ownership to 'nginx' user/group (common for Alpine web servers)
-# We'll set /var/www to nginx:nginx, then specifically ensure 'storage' and 'bootstrap/cache' are writable.
-RUN chown -R nginx:nginx /var/www
+# Diagnostic: Check the current user and group during the Docker build step (will be root by default)
+RUN echo "DEBUG (Dockerfile build): Current user is $(whoami), Current ID is $(id)"
 
-# Set general permissions:
-# Directories: rwx for owner, rx for group/others (755)
-# Files: rw for owner, r for group/others (644)
-RUN find /var/www -type d -exec chmod 755 {} + \
-    && find /var/www -type f -exec chmod 644 {} + \
-    # Ensure storage/bootstrap/cache are writable by the group (and owner)
-    # This is crucial for Laravel to write session, cache, and view files.
-    && chmod -R 775 /var/www/storage \
+# Set specific permissions for storage/cache directories FIRST (775 for group writability)
+# This ensures owner and group have full read/write/execute, and others can read/execute.
+RUN chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
-# --- END CRITICAL PERMISSION FIXES ---
+
+# Change ownership for the entire /var/www directory to 'nobody:nogroup'.
+# This is a robust fallback for unprivileged processes in Alpine.
+RUN chown -R nobody:nogroup /var/www
+
+# Set general permissions for the rest of /var/www (files 644, dirs 755)
+# This ensures public files are readable by Nginx.
+RUN find /var/www -type d -exec chmod 755 {} + \
+    && find /var/www -type f -exec chmod 644 {} +
+
+# Diagnostic: Check permissions and ownership *after* chown and chmod
+RUN echo "DEBUG (Permissions after chown/chmod):" \
+    && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public \
+    && ls -l /var/www/storage/framework/views \
+    && ls -l /var/www/public/build/manifest.json 2>/dev/null || echo "manifest.json not found in /var/www/public/build/"
+
 # --- END CRITICAL PERMISSION FIXES ---
 
 # Copy Nginx and Supervisor configurations
