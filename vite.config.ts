@@ -25,12 +25,12 @@ export default defineConfig(({ mode }) => {
                 'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
             },
         },
-        base: '/', // <-- ✅ This is crucial!
+        // ✅ Use full APP_URL in production
+        base: mode === 'production' ? `${env.APP_URL}/` : '/',
         build: {
-        manifest: true,
-        outDir: 'public/build',
-        emptyOutDir: true,
+            manifest: true,
+            outDir: 'public/build',
+            emptyOutDir: true,
         },
-
     };
 });
