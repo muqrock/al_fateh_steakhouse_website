@@ -11,8 +11,13 @@ echo "Linking storage directory..."
 php artisan storage:link
 
 echo "Running database migrations..."
-if ! php artisan migrate --force; then
-  echo "⚠️ Migration failed. Continuing..."
+set +e  # Temporarily disable exit on error for migrate
+php artisan migrate --force
+MIGRATE_EXIT_CODE=$?
+set -e  # Re-enable exit on error
+
+if [ $MIGRATE_EXIT_CODE -ne 0 ]; then
+  echo "⚠️ Migration failed or had errors (likely due to duplicate tables). Continuing deployment..."
 fi
 
 echo "Clearing stale caches..."
