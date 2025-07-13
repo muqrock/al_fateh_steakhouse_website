@@ -27,8 +27,10 @@ export default defineConfig(({ mode }) => {
         },
         base: '/', // <-- ✅ This is crucial!
         build: {
-            manifest: true,
-            outDir: 'public/build',
+        manifest: true,
+        outDir: 'public/build',
+        emptyOutDir: true,
         },
+
     };
 });

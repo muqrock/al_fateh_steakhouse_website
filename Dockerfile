@@ -2,42 +2,44 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www
 
-# Install cURL and GnuPG for NodeSource setup, and then install Node.js v20 (LTS)
-# This ensures you get a Node.js version compatible with your React Router and Vite dependencies.
+# Install Node.js 20 (needed for Vite + React)
 RUN apt-get update && apt-get install -y curl gnupg2 \
     && curl -sL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
-# Continue with other essential system packages
+# System dependencies
 RUN apt-get install -y \
     build-essential libpng-dev libonig-dev libxml2-dev zip unzip git \
     nginx supervisor libpq-dev libjpeg-dev libfreetype6-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# ✅ Copy full app first (so artisan exists before composer install)
 COPY . .
 
+# ✅ Install Laravel backend dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-ENV APP_URL=https://al-fateh-steakhouse-website.onrender.com
-
-# ✅ Force production build
-# This step will now use Node.js v20.x, which should resolve the EBADENGINE warnings.
+# ✅ Build Vite React frontend
 RUN npm install && npm run build
 
-# ✅ Double check manifest exists
+# ✅ Confirm vite manifest exists
 RUN ls -lah public/build
 
-# ✅ Set correct permissions
-RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
+# ✅ Set permissions (important for storage and logs)
+RUN chown -R www-data:www-data /var/www && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
+# ✅ Copy server config
 COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# ✅ Entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
