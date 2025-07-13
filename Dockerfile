@@ -35,6 +35,8 @@ COPY . .
 # ✅ Install Laravel dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
+ENV APP_URL=https://al-fateh-steakhouse-website.onrender.com
+
 # ✅ Install frontend (Vite React) and build assets
 RUN npm install && npm run build
 
