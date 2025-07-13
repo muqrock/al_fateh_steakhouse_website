@@ -29,8 +29,14 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # ✅ Build Vite React frontend
 RUN npm install && npm run build
 
-# ✅ Confirm vite manifest exists
-RUN ls -lah public/build
+# START OF UPDATED DIAGNOSTIC STEPS:
+# ✅ Confirm vite manifest exists in the right place
+# This will list the contents of the .vite directory, including manifest.json
+RUN ls -lah /var/www/public/build/.vite
+# ✅ Confirm assets exist inside the assets directory
+# This will list the actual compiled JS/CSS files
+RUN ls -lah /var/www/public/build/assets
+# END OF UPDATED DIAGNOSTIC STEPS
 
 # ✅ Set permissions (important for storage and logs)
 RUN chown -R www-data:www-data /var/www && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
