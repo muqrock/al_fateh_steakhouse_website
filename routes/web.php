@@ -25,6 +25,11 @@ use Inertia\Inertia;
 |
 */
 
+// routes/web.php
+Route::get('/healthz', function () {
+    return response()->json(['status' => 'ok']);
+});
+
 // Homepage Route
 Route::get('/', function () {
     return Inertia::render('HomePage');
