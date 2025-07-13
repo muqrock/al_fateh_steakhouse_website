@@ -66,7 +66,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/confirm-password', function () {
         return Inertia::render('auth/confirm-password');
-    })->name('password.confirm');
+    })->name('password.confirm'); // ⬅️ keep this
 
     Route::post('/confirm-password', function (Request $request) {
         $request->validate([
@@ -76,7 +76,7 @@ Route::middleware('auth')->group(function () {
         $request->session()->put('auth.password_confirmed_at', time());
 
         return redirect()->intended();
-    })->name('password.confirm');
+    })->name('password.confirm.store'); // ✅ renamed this to avoid conflict
 });
 
 // Password Reset Routes
