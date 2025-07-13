@@ -1,0 +1,9 @@
+node_modules
+vendor
+storage
+.git
+.env
+npm-debug.log
+Dockerfile
+docker-compose.yml
+tests
