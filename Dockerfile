@@ -28,23 +28,45 @@ RUN npm ci --no-audit --prefer-offline
 # Build frontend assets
 RUN npm run build && npm cache clean --force
 
-# --- CRITICAL PERMISSION FIXES (Final attempt based on logs) ---
+# --- CRITICAL PERMISSION FIXES (Re-introducing mkdir -p) ---
 
 # Diagnostic: Check the current user and group during the Docker build step
 RUN echo "DEBUG (Dockerfile build): Current user is $(whoami), Current ID is $(id)"
 
-# Set ownership for the entire /var/www directory to 'nobody:nogroup'.
+# STEP 1: Create all necessary runtime directories
+# This must happen BEFORE any chown/chmod on these specific paths
+RUN mkdir -p /var/www/storage/app/public \
+             /var/www/storage/framework/cache/data \
+             /var/www/storage/framework/sessions \
+             /var/www/storage/framework/views \
+             /var/www/storage/logs \
+             /var/www/bootstrap/cache \
+             /var/www/public/build
+# Diagnostic: Confirm directories were created
+RUN echo "DEBUG (mkdir completed). Listing contents of /var/www:" \
+    && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
+    && ls -l /var/www/storage/framework/views
+
+# STEP 2: Set ownership for the entire /var/www directory to 'nobody:nogroup'.
 # This is generally the safest unprivileged user/group in Alpine for web processes.
 RUN chown -R nobody:nogroup /var/www
+# Diagnostic: Confirm ownership change
+RUN echo "DEBUG (chown completed). Listing contents of /var/www with ownership:" \
+    && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
+    && ls -l /var/www/storage/framework/views
 
-# Set base permissions for all files and directories under /var/www
+# STEP 3: Set base permissions for all files and directories under /var/www
 # Directories will be 755 (owner rwx, group rx, others rx)
 # Files will be 644 (owner rw, group r, others r)
 RUN find /var/www -type d -exec chmod 755 {} + \
     && find /var/www -type f -exec chmod 644 {} +
+# Diagnostic: Confirm general permissions
+RUN echo "DEBUG (general chmod completed). Listing contents of /var/www with permissions:" \
+    && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
+    && ls -l /var/www/storage/framework/views
 
-# Explicitly ensure specific Laravel writable directories are group-writable (775)
-# This command *must* come after the general find/chmod commands to override them.
+# STEP 4: Explicitly ensure specific Laravel writable directories are group-writable (775)
+# This command *must* come after the general find/chmod commands to override them for these paths.
 RUN chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/public/build
