@@ -17,6 +17,11 @@ RUN apt-get install -y \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
+# START OF NEW DIAGNOSTIC STEP:
+# ✅ Check PHP-FPM's listen address to diagnose 502 Bad Gateway
+RUN grep -r "listen =" /etc/php/8.2/fpm/pool.d/www.conf || true
+# END OF NEW DIAGNOSTIC STEP
+
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -29,14 +34,12 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 # ✅ Build Vite React frontend
 RUN npm install && npm run build
 
-# START OF UPDATED DIAGNOSTIC STEPS:
+# START OF PREVIOUS DIAGNOSTIC STEPS (keep these for now):
 # ✅ Confirm vite manifest exists in the right place
-# This will list the contents of the .vite directory, including manifest.json
 RUN ls -lah /var/www/public/build/.vite
 # ✅ Confirm assets exist inside the assets directory
-# This will list the actual compiled JS/CSS files
 RUN ls -lah /var/www/public/build/assets
-# END OF UPDATED DIAGNOSTIC STEPS
+# END OF PREVIOUS DIAGNOSTIC STEPS
 
 # ✅ Set permissions (important for storage and logs)
 RUN chown -R www-data:www-data /var/www && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
