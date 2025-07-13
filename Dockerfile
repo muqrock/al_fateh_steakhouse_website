@@ -35,9 +35,6 @@ COPY . .
 # ✅ Install Laravel dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# ✅ Clear caches (important for correct config)
-RUN php artisan config:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache
-
 # ✅ Install frontend (Vite React) and build assets
 RUN npm install && npm run build
 
@@ -51,5 +48,8 @@ COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # ✅ Expose HTTP port
 EXPOSE 80
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # ✅ Start Supervisor to manage PHP-FPM and Nginx
-CMD ["/usr/bin/supervisord"]
+CMD ["/entrypoint.sh"]
