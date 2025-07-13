@@ -1,19 +1,17 @@
-# Use official PHP image with FPM and Alpine base (smaller footprint)
+# Use official PHP image with FPM and Alpine base
 FROM php:8.2-fpm-alpine
 
 WORKDIR /var/www
 
-# Install dependencies in a single RUN layer (reduces image size)
+# 1. Install system dependencies first
 RUN apk add --no-cache --update \
-    # Base packages
     bash \
     curl \
     git \
-    # Node.js 20 (for Vite)
-    nodejs=20.12.2-r0 \
+    # Node.js (using current stable from Alpine repos)
+    nodejs \
     npm \
-    yarn \
-    # Build dependencies (removed after compile)
+    # Build dependencies
     build-base \
     autoconf \
     libpng-dev \
@@ -24,13 +22,11 @@ RUN apk add --no-cache --update \
     oniguruma-dev \
     # Runtime dependencies
     nginx \
-    supervisor \
-    # Cleanup
-    && rm -rf /var/cache/apk/*
+    supervisor
 
-# Configure PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+# 2. Configure PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_pgsql \
     mbstring \
@@ -38,55 +34,33 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     pcntl \
     bcmath \
     gd \
-    zip \
-    # Clean build dependencies
-    && apk del build-base autoconf
+    zip
 
-# Verify PHP-FPM configuration (for debugging)
-RUN echo "PHP-FPM Config:" && \
-    grep -r "listen =" /etc/php82/php-fpm.d/www.conf || true
-
-# Install Composer (multi-stage to reduce image size)
+# 3. Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Copy application files (with .dockerignore to exclude unnecessary files)
+# 4. Copy application files
 COPY . .
 
-# Install backend dependencies (no dev dependencies)
+# 5. Install backend dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-# Install frontend dependencies and build
+# 6. Install frontend dependencies
 RUN npm ci --no-audit --prefer-offline && \
     npm run build && \
     npm cache clean --force
 
-# Verify build output
-RUN ls -lah /var/www/public/build && \
-    ls -lah /var/www/public/build/assets
-
-# Set permissions (optimized for least privilege)
+# 7. Set permissions
 RUN chown -R www-data:www-data \
     /var/www/storage \
     /var/www/bootstrap/cache \
-    /var/www/public/build \
-    && find /var/www/storage -type d -exec chmod 775 {} \; \
-    && find /var/www/storage -type f -exec chmod 664 {} \;
+    /var/www/public/build
 
-# Copy configurations
-COPY --chown=www-data:www-data \
-    ./docker/nginx/default.conf /etc/nginx/http.d/default.conf
-COPY --chown=root:root \
-    ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY --chown=root:root \
-    entrypoint.sh /entrypoint.sh
-
-# Make entrypoint executable
+# 8. Copy configurations
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Health check endpoint
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost/healthz || exit 1
-
 EXPOSE 80
-
 CMD ["/entrypoint.sh"]
