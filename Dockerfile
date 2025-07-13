@@ -1,4 +1,4 @@
-# Use official PHP with extensions
+# Use official PHP image with extensions
 FROM php:8.2-fpm
 
 # Set working directory
@@ -17,12 +17,13 @@ RUN apt-get update && apt-get install -y \
     nginx \
     nodejs \
     npm \
-    supervisor
+    supervisor \
+    libpq-dev \
+    libjpeg-dev \
+    libfreetype6-dev
 
-# Install PHP extensions
-RUN apt-get update && \
-    apt-get install -y libpq-dev libjpeg-dev libpng-dev libfreetype6-dev zip unzip && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+# Install PHP extensions (including PostgreSQL)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Install Composer
@@ -31,23 +32,24 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy project files
 COPY . .
 
-# Install Laravel dependencies
+# ✅ Clear caches (important for correct config)
+RUN php artisan config:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache
+
+# ✅ Install Laravel dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Install React (Vite) frontend
+# ✅ Install frontend (Vite React) and build assets
 RUN npm install && npm run build
 
-# Give permissions
+# ✅ Set correct permissions
 RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 
-# Copy Nginx config
+# ✅ Copy Nginx config and Supervisor config
 COPY ./docker/nginx/default.conf /etc/nginx/sites-available/default
-
-# Copy Supervisor config
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose port 80
+# ✅ Expose HTTP port
 EXPOSE 80
 
-# Start Supervisor to manage Nginx + PHP-FPM
+# ✅ Start Supervisor to manage PHP-FPM and Nginx
 CMD ["/usr/bin/supervisord"]
