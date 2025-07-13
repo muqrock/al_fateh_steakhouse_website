@@ -2,10 +2,6 @@ FROM php:8.2-fpm
 
 WORKDIR /var/www
 
-# ✅ Make sure your production .env is copied in
-COPY .env /var/www/.env
-
-
 # Install Node.js 20 (needed for Vite + React)
 RUN apt-get update && apt-get install -y curl gnupg2 \
     && curl -sL https://deb.nodesource.com/setup_20.x | bash - \
