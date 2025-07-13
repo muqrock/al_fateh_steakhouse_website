@@ -28,39 +28,32 @@ RUN npm ci --no-audit --prefer-offline
 # Build frontend assets
 RUN npm run build && npm cache clean --force
 
-# --- CRITICAL PERMISSION FIXES (Trying 'nobody' user and adding diagnostics) ---
+# --- CRITICAL PERMISSION FIXES (Final attempt based on logs) ---
 
-# Ensure all necessary runtime directories exist
-RUN mkdir -p /var/www/storage/app/public \
-             /var/www/storage/framework/cache/data \
-             /var/www/storage/framework/sessions \
-             /var/www/storage/framework/views \
-             /var/www/storage/logs \
-             /var/www/bootstrap/cache \
-             /var/www/public/build
-
-# Diagnostic: Check the current user and group during the Docker build step (will be root by default)
+# Diagnostic: Check the current user and group during the Docker build step
 RUN echo "DEBUG (Dockerfile build): Current user is $(whoami), Current ID is $(id)"
 
-# Set specific permissions for storage/cache directories FIRST (775 for group writability)
-# This ensures owner and group have full read/write/execute, and others can read/execute.
-RUN chmod -R 775 /var/www/storage \
-    && chmod -R 775 /var/www/bootstrap/cache
-
-# Change ownership for the entire /var/www directory to 'nobody:nogroup'.
-# This is a robust fallback for unprivileged processes in Alpine.
+# Set ownership for the entire /var/www directory to 'nobody:nogroup'.
+# This is generally the safest unprivileged user/group in Alpine for web processes.
 RUN chown -R nobody:nogroup /var/www
 
-# Set general permissions for the rest of /var/www (files 644, dirs 755)
-# This ensures public files are readable by Nginx.
+# Set base permissions for all files and directories under /var/www
+# Directories will be 755 (owner rwx, group rx, others rx)
+# Files will be 644 (owner rw, group r, others r)
 RUN find /var/www -type d -exec chmod 755 {} + \
     && find /var/www -type f -exec chmod 644 {} +
 
-# Diagnostic: Check permissions and ownership *after* chown and chmod
-RUN echo "DEBUG (Permissions after chown/chmod):" \
+# Explicitly ensure specific Laravel writable directories are group-writable (775)
+# This command *must* come after the general find/chmod commands to override them.
+RUN chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/public/build
+
+# Diagnostic: Check permissions and ownership *after* all chown and chmod operations
+RUN echo "DEBUG (Permissions after FINAL chown/chmod):" \
     && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public \
     && ls -l /var/www/storage/framework/views \
-    && ls -l /var/www/public/build/manifest.json 2>/dev/null || echo "manifest.json not found in /var/www/public/build/"
+    && ls -l /var/www/public/build/manifest.json 2>/dev/null || echo "manifest.json still not found in /var/www/public/build/"
 
 # --- END CRITICAL PERMISSION FIXES ---
 
