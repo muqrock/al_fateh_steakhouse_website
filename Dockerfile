@@ -13,16 +13,14 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
 
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Install PHP deps first
-COPY composer.json composer.lock ./
+# Copy ALL application files including artisan first
+COPY . .
+
+# Now run composer install
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
 # Install Node deps
-COPY package.json package-lock.json ./
 RUN npm ci --no-audit --prefer-offline
-
-# Copy rest of code
-COPY . .
 
 # Build frontend assets
 RUN npm run build && npm cache clean --force
