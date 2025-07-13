@@ -13,19 +13,21 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
 
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# Copy ALL application files including artisan first
+# Copy all application files including artisan
 COPY . .
 
-# Now run composer install
+# Run composer install
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-# Install Node deps
+# Install Node dependencies
 RUN npm ci --no-audit --prefer-offline
 
 # Build frontend assets
 RUN npm run build && npm cache clean --force
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/build
+# Ensure required directories exist, then set permissions
+RUN mkdir -p /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public/build
 
 COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
