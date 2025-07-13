@@ -79,17 +79,30 @@ RUN echo "DEBUG (Permissions after FINAL chown/chmod):" \
 
 # --- END CRITICAL PERMISSION FIXES ---
 
-# Copy Nginx and Supervisor configurations
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# --- NEW: Ensure Nginx has access to its working directories ---
+# Nginx typically runs as the 'nginx' user (UID/GID 101) in Alpine.
+# It needs write access to its cache and run directories.
+RUN mkdir -p /var/cache/nginx /var/run/nginx && \
+    chown -R nginx:nginx /var/cache/nginx /var/run/nginx && \
+    chmod -R 755 /var/cache/nginx /var/run/nginx
 
-# Copy and make entrypoint executable
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy Nginx and Supervisor configurations with correct ownership for files
+# Nginx config should be readable by nginx user. Supervisor/entrypoint by root.
+COPY --chown=nginx:nginx docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY --chown=root:root docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# It's good practice to place entrypoint in /usr/local/bin
+COPY --chown=root:root entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# --- FIX: Run as nobody user to match storage ownership ---
-USER nobody
+# --- REMOVED: USER nobody ---
+# Nginx and Supervisor typically start as root, then Nginx drops privileges.
+# Setting USER nobody here might prevent Supervisor/Nginx from starting correctly.
+# Leave the default user as root for running the entrypoint.
 
 EXPOSE 80
 
-CMD ["/entrypoint.sh"]
+# Use ENTRYPOINT instead of CMD for a consistent and robust container launch
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# CMD is now optional. If you had additional arguments for the entrypoint, they'd go here.
+# CMD []
