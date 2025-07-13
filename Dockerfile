@@ -87,6 +87,9 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# --- FIX: Run as nobody user to match storage ownership ---
+USER nobody
+
 EXPOSE 80
 
 CMD ["/entrypoint.sh"]
