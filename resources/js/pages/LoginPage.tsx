@@ -226,6 +226,17 @@ const LoginPage: React.FC = () => {
                                 {errors.password_confirmation && <p className="mt-1 text-sm text-red-500">{errors.password_confirmation}</p>}
                             </div>
                         )}
+                        {mode === 'login' && (
+  <div className="text-right">
+    <a
+      href="/forgot-password"
+      className="text-sm text-orange-500 hover:underline"
+    >
+      Forgot password?
+    </a>
+  </div>
+)}
+
                         {/* Submit Button */}
                         <button
                             type="submit"

@@ -31,7 +31,7 @@ export default function ForgotPassword() {
                         type="email"
                         name="email"
                         value={data.email}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-black"
                         required
                         autoFocus
                         onChange={(e) => setData('email', e.target.value)}
