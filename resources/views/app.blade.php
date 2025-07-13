@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         {{-- Inline script for dark mode detection --}}
         <script>
@@ -28,27 +28,21 @@
         </style>
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="csrf-token" content="{{ csrf_token() }}" />
 
         {{-- Favicons --}}
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
         {{-- Fonts --}}
-        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="preconnect" href="https://fonts.bunny.net" />
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-        {{-- 🚀 Critical Vite Asset Loading Changes --}}
+        {{-- Vite Asset Loading --}}
         @routes
         @viteReactRefresh
-        @if(config('app.env') === 'local')
-            @vite(['resources/js/app.tsx'])
-        @else
-            {{-- Production assets with fallback --}}
-            <link rel="stylesheet" href="{{ mix('build/assets/app.css') }}">
-            <script type="module" src="{{ mix('build/assets/app.js') }}" defer></script>
-        @endif
+        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
 
         @inertiaHead
     </head>
