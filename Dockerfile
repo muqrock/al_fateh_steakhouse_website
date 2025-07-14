@@ -28,7 +28,9 @@ RUN npm ci --no-audit --prefer-offline
 # Build frontend assets
 RUN npm run build && npm cache clean --force
 
-# --- CRITICAL PERMISSION FIXES (Re-introducing mkdir -p) ---
+# ... (your existing Dockerfile content)
+
+# --- CRITICAL PERMISSION FIXES ---
 
 # Diagnostic: Check the current user and group during the Docker build step
 RUN echo "DEBUG (Dockerfile build): Current user is $(whoami), Current ID is $(id)"
@@ -47,12 +49,12 @@ RUN echo "DEBUG (mkdir completed). Listing contents of /var/www:" \
     && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
     && ls -l /var/www/storage/framework/views
 
-# STEP 2: Set ownership for the entire /var/www directory to 'nobody:nogroup'.
-# This is generally the safest unprivileged user/group in Alpine for web processes.
-RUN chown -R nobody:nogroup /var/www
+# STEP 2: Set ownership for the entire /var/www directory to 'www-data:www-data'.
+# THIS IS THE CRITICAL CHANGE: Align with PHP-FPM's default user in this base image.
+RUN chown -R www-data:www-data /var/www # <--- CHANGE THIS LINE
 # Diagnostic: Confirm ownership change
 RUN echo "DEBUG (chown completed). Listing contents of /var/www with ownership:" \
-    && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public/build \
+    && ls -ld /var/www/storage /var/www/bootstrap/cache /var/www/public/build \ 
     && ls -l /var/www/storage/framework/views
 
 # STEP 3: Set base permissions for all files and directories under /var/www
@@ -78,6 +80,8 @@ RUN echo "DEBUG (Permissions after FINAL chown/chmod):" \
     && ls -l /var/www/public/build/manifest.json 2>/dev/null || echo "manifest.json still not found in /var/www/public/build/"
 
 # --- END CRITICAL PERMISSION FIXES ---
+
+# ... (rest of your Dockerfile, which looks good)
 
 # --- NEW: Ensure Nginx has access to its working directories ---
 # Nginx typically runs as the 'nginx' user (UID/GID 101) in Alpine.
