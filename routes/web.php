@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
         $request->session()->put('auth.password_confirmed_at', time());
 
         return redirect()->intended();
-    })->name('password.confirm');
+    })->name('password.confirm.post');
 });
 
 // Password Reset Routes
