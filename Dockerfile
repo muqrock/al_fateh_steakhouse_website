@@ -4,7 +4,7 @@ FROM node:18-alpine as frontend
 WORKDIR /app
 
 # Copy frontend files
-COPY package*.json vite.config.ts tailwind.config.js postcss.config.js ./
+COPY package*.json vite.config.ts tailwind.config.js ./
 COPY resources ./resources
 COPY public ./public
 
