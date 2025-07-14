@@ -5,25 +5,23 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    plugins: [
-        laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
-            ssr: 'resources/js/ssr.tsx',
-            refresh: true,
-            // Force HTTPS asset URLs in production
-            ...(process.env.NODE_ENV === 'production' && {
-                base: 'https://al-fateh-steakhouse-website-3fbz.onrender.com/',
-            }),
-        }),
-        react(),
-        tailwindcss(),
-    ],
-    esbuild: {
-        jsx: 'automatic',
+  // ✅ This ensures HTTPS-respecting relative paths like /build/assets/...
+  base: '/build/',
+  plugins: [
+    laravel({
+      input: ['resources/css/app.css', 'resources/js/app.tsx'],
+      ssr: 'resources/js/ssr.tsx',
+      refresh: true,
+    }),
+    react(),
+    tailwindcss(),
+  ],
+  esbuild: {
+    jsx: 'automatic',
+  },
+  resolve: {
+    alias: {
+      'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
     },
-    resolve: {
-        alias: {
-            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
-        },
-    },
+  },
 });
