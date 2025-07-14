@@ -10,6 +10,10 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
+            // Force HTTPS asset URLs in production
+            ...(process.env.NODE_ENV === 'production' && {
+                base: 'https://al-fateh-steakhouse-website-3fbz.onrender.com/',
+            }),
         }),
         react(),
         tailwindcss(),
