@@ -1,53 +1,64 @@
-# Use the official PHP image with Apache
-FROM php:8.2-apache
+# --- FRONTEND BUILD STAGE ---
+FROM node:18-alpine as frontend
 
-# Install system dependencies and PHP extensions
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+WORKDIR /app
 
-# Install Composer
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+# Copy frontend files
+COPY package*.json vite.config.ts tailwind.config.js postcss.config.js ./
+COPY resources ./resources
+COPY public ./public
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
-
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy only composer files first for build cache
-COPY composer.json composer.lock ./
-
-# Install Composer dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-
-# Copy rest of the application
-COPY . .
-
-# Install Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs
-
-# Install npm dependencies and build assets
+# Install dependencies and build frontend assets
 RUN npm install && npm run build
 
-# Set permissions for storage and cache
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# --- BACKEND + LARAVEL STAGE ---
+FROM php:8.2-fpm-alpine
 
-# Set permissions for all files
-RUN chown -R www-data:www-data . \
-    && chmod -R 755 .
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    git \
+    unzip \
+    libpng-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    libzip-dev \
+    postgresql-dev \
+    bash \
+    shadow \
+    nodejs \
+    npm \
+    supervisor
 
-# Expose port 80
-EXPOSE 80
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_pgsql mbstring zip bcmath
 
-# Start Apache server
-CMD ["apache2-foreground"]
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+
+# Copy full Laravel project
+COPY . .
+
+# Copy built frontend assets from frontend stage
+COPY --from=frontend /app/public/build ./public/build
+
+# Set correct permissions
+RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
+RUN chown -R laravel:laravel /var/www
+
+# Install backend dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Laravel optimizations
+RUN php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear
+
+USER laravel
+
+EXPOSE 8000
+
+# Start Laravel development server (can customize if you're using Nginx)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
