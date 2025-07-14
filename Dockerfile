@@ -8,7 +8,9 @@ COPY resources ./resources
 COPY public ./public
 
 # Install dependencies and build frontend assets
-RUN npm install && npm run build
+RUN rm -rf public/build
+RUN npm install
+RUN npm run build
 
 # --- BACKEND + LARAVEL STAGE ---
 FROM php:8.2-fpm-alpine

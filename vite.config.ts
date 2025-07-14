@@ -5,7 +5,6 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // ✅ This ensures HTTPS-respecting relative paths like /build/assets/...
   base: '/build/',
   plugins: [
     laravel({
