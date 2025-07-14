@@ -162,7 +162,6 @@ Route::middleware(['admin'])->group(function () {
     Route::delete('/admin/menu/{menu}', [MenuController::class, 'destroy'])->name('admin.menu.destroy');
     // In your admin routes group:
     Route::post('/admin/menu', [MenuController::class, 'store'])->name('admin.menu.store');
-    Route::post('/admin/menu/{menu}', [MenuController::class, 'update'])->name('admin.menu.update');
     // ==================== END MENU ROUTES ====================
 });
 
