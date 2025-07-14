@@ -158,6 +158,7 @@ Route::middleware(['admin'])->group(function () {
     Route::post('/admin/menu', [MenuController::class, 'store'])->name('admin.menu.store');
     Route::get('/admin/menu/{menu}/edit', [MenuController::class, 'edit'])->name('admin.menu.edit');
     Route::put('/admin/menu/{menu}', [MenuController::class, 'update'])->name('admin.menu.update');
+    Route::patch('/admin/menu/{menu}', [MenuController::class, 'patch'])->name('admin.menu.patch');
     Route::delete('/admin/menu/{menu}', [MenuController::class, 'destroy'])->name('admin.menu.destroy');
     // In your admin routes group:
     Route::post('/admin/menu', [MenuController::class, 'store'])->name('admin.menu.store');
